@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./emailAuth";
 import { insertOpportunitySchema, insertApplicationSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -12,7 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUserWithStats(userId);
       res.json(user);
     } catch (error) {
@@ -70,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/opportunities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -146,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Application routes
   app.post("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { opportunityId } = req.body;
 
       // Check if user already applied
@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/applications/user/:userId", isAuthenticated, async (req: any, res) => {
     try {
       const { userId } = req.params;
-      const requestingUserId = req.user.claims.sub;
+      const requestingUserId = req.user.id;
       const user = await storage.getUser(requestingUserId);
       
       // Users can only see their own applications, admins can see any
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/applications/opportunity/:opportunityId", isAuthenticated, async (req: any, res) => {
     try {
       const { opportunityId } = req.params;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -223,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status, notes, coinsAwarded } = req.body;
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -286,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes (admin only)
   app.get("/api/analytics", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
@@ -304,7 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get("/api/admin/opportunities", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "admin") {
