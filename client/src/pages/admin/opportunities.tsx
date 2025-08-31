@@ -53,13 +53,8 @@ export default function AdminOpportunities() {
     }
   }, [user, authLoading, toast]);
 
-  const { data: opportunitiesData, isLoading } = useQuery({
-    queryKey: ["/api/opportunities", {
-      search: searchQuery,
-      status: statusFilter === "all" ? undefined : [statusFilter],
-      limit: pageSize,
-      offset: (currentPage - 1) * pageSize,
-    }],
+  const { data: opportunities, isLoading } = useQuery<OpportunityWithCreator[]>({
+    queryKey: ["/api/admin/opportunities"],
     enabled: !!user && user.role === "admin",
   });
 
@@ -142,9 +137,21 @@ export default function AdminOpportunities() {
     return null;
   }
 
-  const opportunities = opportunitiesData?.opportunities || [];
-  const totalOpportunities = opportunitiesData?.total || 0;
+  // Filter opportunities based on search and status
+  const filteredOpportunities = opportunities?.filter(opp => {
+    const matchesSearch = !searchQuery || opp.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         opp.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || opp.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  }) || [];
+  
+  // Pagination for filtered opportunities
+  const totalOpportunities = filteredOpportunities.length;
   const totalPages = Math.ceil(totalOpportunities / pageSize);
+  const paginatedOpportunities = filteredOpportunities.slice(
+    (currentPage - 1) * pageSize, 
+    currentPage * pageSize
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -167,7 +174,7 @@ export default function AdminOpportunities() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOpportunities(opportunities.map(opp => opp.id));
+      setSelectedOpportunities(paginatedOpportunities.map(opp => opp.id));
     } else {
       setSelectedOpportunities([]);
     }
@@ -289,7 +296,7 @@ export default function AdminOpportunities() {
                     </div>
                   ))}
                 </div>
-              ) : opportunities.length === 0 ? (
+              ) : (opportunities || []).length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                     <i className="fas fa-clipboard-list text-muted-foreground text-xl"></i>
@@ -315,7 +322,7 @@ export default function AdminOpportunities() {
                       <tr className="text-left">
                         <th className="py-3 pl-4">
                           <Checkbox
-                            checked={selectedOpportunities.length === opportunities.length}
+                            checked={selectedOpportunities.length === paginatedOpportunities.length && paginatedOpportunities.length > 0}
                             onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                             data-testid="checkbox-select-all"
                           />
@@ -329,7 +336,7 @@ export default function AdminOpportunities() {
                       </tr>
                     </thead>
                     <tbody>
-                      {opportunities.map((opportunity: OpportunityWithCreator) => (
+                      {paginatedOpportunities.map((opportunity: OpportunityWithCreator) => (
                         <tr
                           key={opportunity.id}
                           className="border-b border-border/50 hover:bg-muted/30 transition-colors"
@@ -355,8 +362,8 @@ export default function AdminOpportunities() {
                             </div>
                           </td>
                           <td className="py-4">
-                            <Badge className={getStatusColor(opportunity.status)}>
-                              {opportunity.status.charAt(0).toUpperCase() + opportunity.status.slice(1)}
+                            <Badge className={getStatusColor(opportunity.status || 'open')}>
+                              {(opportunity.status || 'open').charAt(0).toUpperCase() + (opportunity.status || 'open').slice(1)}
                             </Badge>
                           </td>
                           <td className="py-4">

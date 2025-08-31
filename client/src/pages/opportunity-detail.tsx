@@ -43,6 +43,8 @@ export default function OpportunityDetail() {
         description: "Your application has been submitted successfully!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/applications/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
       setShowApplicationModal(false);
     },
     onError: (error) => {
