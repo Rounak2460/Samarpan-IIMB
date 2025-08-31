@@ -25,6 +25,7 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include', // Include session cookies
         body: JSON.stringify({ email, password }),
       });
 
@@ -36,12 +37,8 @@ export default function Login() {
           description: `Successfully logged in as ${data.user.firstName}`,
         });
         
-        // Redirect based on role
-        if (data.user.role === "admin") {
-          setLocation("/admin");
-        } else {
-          setLocation("/");
-        }
+        // Force a page reload to update authentication state
+        window.location.href = data.user.role === "admin" ? "/admin" : "/";
       } else {
         toast({
           title: "Login Failed",

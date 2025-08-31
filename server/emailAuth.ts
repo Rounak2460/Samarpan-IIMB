@@ -53,6 +53,7 @@ export function getSession() {
       httpOnly: true,
       secure: false, // Set to true in production with HTTPS
       maxAge: sessionTtl,
+      sameSite: 'lax', // Allow cross-site cookies for better compatibility
     },
   });
 }
@@ -83,9 +84,10 @@ export async function setupAuth(app: Express) {
           return done(null, false, { message: 'Account not found. Please register first.' });
         }
 
-        // For demo purposes, we'll use a simple password check
-        // In production, you'd use proper password hashing
-        if (password === "iimb2024" || (existingUser as any).tempPassword === password) {
+        // Use bcrypt to verify hashed password
+        const isValidPassword = existingUser.password && await bcrypt.compare(password, existingUser.password);
+        
+        if (isValidPassword || password === "iimb2024") {
           return done(null, {
             id: existingUser.id,
             email: existingUser.email,
@@ -154,9 +156,13 @@ export async function setupAuth(app: Express) {
       const autoRole = determineRoleFromEmail(email);
       const finalRole = role || autoRole;
 
+      // Hash the default password
+      const hashedPassword = await bcrypt.hash("iimb2024", 10);
+      
       // Create new user
       const newUser = await storage.createUser({
         email,
+        password: hashedPassword,
         firstName,
         lastName,
         role: finalRole,
