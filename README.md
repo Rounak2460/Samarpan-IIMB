@@ -274,4 +274,4 @@ Indian Institute of Management Bangalore (IIMB) is one of India's premier busine
 
 ---
 
-*Built with ❤️ for the IIM Bangalore community*
+*Built with ❤️ by Rounak and Bharat for the IIM Bangalore community*
