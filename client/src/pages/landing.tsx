@@ -309,7 +309,7 @@ export default function Landing() {
           </div>
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-gray-400">
-              &copy; 2024 IIMB Samarpan. Developed by <strong className="text-white">Vikasana</strong> - IIM Bangalore Social Impact Cell
+              &copy; 2024 IIMB Samarpan. Developed by <strong className="text-white">Rounak and Bharat (PGP/PGPBA 2026 batch)</strong> - IIM Bangalore Social Impact Cell
             </p>
           </div>
         </div>

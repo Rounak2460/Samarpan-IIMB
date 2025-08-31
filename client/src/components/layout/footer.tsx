@@ -82,7 +82,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 IIMB Samarpan. Built with ❤️ by <strong>Vikasana</strong> - IIM Bangalore Social Impact Cell</p>
+          <p>&copy; 2024 IIMB Samarpan. Built with ❤️ by <strong>Rounak and Bharat (PGP/PGPBA 2026 batch)</strong> - IIM Bangalore Social Impact Cell</p>
         </div>
       </div>
     </footer>
