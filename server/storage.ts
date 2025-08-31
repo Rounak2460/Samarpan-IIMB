@@ -253,6 +253,11 @@ export class DatabaseStorage implements IStorage {
       whereConditions = sql`${whereConditions} AND ${opportunities.duration} = ANY(${duration})`;
     }
     
+    if (skills && skills.length > 0) {
+      // Check if any of the required skills are present in the opportunity's skills array
+      whereConditions = sql`${whereConditions} AND ${opportunities.skills} && ${skills}`;
+    }
+    
     if (status && status.length > 0) {
       whereConditions = sql`${whereConditions} AND ${opportunities.status} = ANY(${status})`;
     } else {
