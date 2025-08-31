@@ -10,10 +10,19 @@ import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import type { OpportunityWithCreator } from "@shared/schema";
+import type { OpportunityWithCreator, ApplicationWithDetails } from "@shared/schema";
 
 export default function AdminOpportunities() {
   const { user, isLoading: authLoading } = useAuth();
@@ -37,6 +46,10 @@ export default function AdminOpportunities() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOpportunities, setSelectedOpportunities] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOpportunityId, setSelectedOpportunityId] = useState<string | null>(null);
+  const [applicantAction, setApplicantAction] = useState<{id: string; action: 'approve' | 'reject'} | null>(null);
+  const [hoursCompleted, setHoursCompleted] = useState("");
+  const [adminFeedback, setAdminFeedback] = useState("");
   const pageSize = 10;
 
   useEffect(() => {
@@ -56,6 +69,11 @@ export default function AdminOpportunities() {
   const { data: opportunities, isLoading } = useQuery<OpportunityWithCreator[]>({
     queryKey: ["/api/admin/opportunities"],
     enabled: !!user && user.role === "admin",
+  });
+
+  const { data: applicants, isLoading: applicantsLoading } = useQuery<ApplicationWithDetails[]>({
+    queryKey: ["/api/applications/opportunity", selectedOpportunityId],
+    enabled: !!selectedOpportunityId,
   });
 
   const deleteOpportunityMutation = useMutation({
@@ -117,6 +135,49 @@ export default function AdminOpportunities() {
       toast({
         title: "Error",
         description: error.message || "Failed to update opportunity status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateApplicationMutation = useMutation({
+    mutationFn: async ({ applicationId, status, hoursCompleted, adminFeedback }: {
+      applicationId: string;
+      status: string;
+      hoursCompleted?: number;
+      adminFeedback?: string;
+    }) => {
+      const body: any = { status };
+      if (hoursCompleted !== undefined) body.hoursCompleted = hoursCompleted;
+      if (adminFeedback) body.adminFeedback = adminFeedback;
+      await apiRequest("PUT", `/api/applications/${applicationId}/status`, body);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Application updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      setApplicantAction(null);
+      setHoursCompleted("");
+      setAdminFeedback("");
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update application",
         variant: "destructive",
       });
     },
@@ -205,6 +266,30 @@ export default function AdminOpportunities() {
       // Error handling is done in the mutations
     }
   };
+
+  const handleApplicantAction = (applicationId: string, action: 'approve' | 'reject') => {
+    if (action === 'approve') {
+      setApplicantAction({ id: applicationId, action });
+    } else {
+      updateApplicationMutation.mutate({
+        applicationId,
+        status: 'rejected'
+      });
+    }
+  };
+
+  const handleApproveWithDetails = () => {
+    if (!applicantAction) return;
+    
+    updateApplicationMutation.mutate({
+      applicationId: applicantAction.id,
+      status: 'completed',
+      hoursCompleted: hoursCompleted ? parseFloat(hoursCompleted) : undefined,
+      adminFeedback: adminFeedback || undefined
+    });
+  };
+
+  const selectedOpportunity = opportunities?.find(opp => opp.id === selectedOpportunityId);
 
   return (
     <div className="min-h-screen bg-background">
@@ -339,10 +424,11 @@ export default function AdminOpportunities() {
                       {paginatedOpportunities.map((opportunity: OpportunityWithCreator) => (
                         <tr
                           key={opportunity.id}
-                          className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                          className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
                           data-testid={`opportunity-row-${opportunity.id}`}
+                          onClick={() => setSelectedOpportunityId(opportunity.id)}
                         >
-                          <td className="py-4 pl-4">
+                          <td className="py-4 pl-4" onClick={(e) => e.stopPropagation()}>
                             <Checkbox
                               checked={selectedOpportunities.includes(opportunity.id)}
                               onCheckedChange={(checked) => 
@@ -372,16 +458,14 @@ export default function AdminOpportunities() {
                             </Badge>
                           </td>
                           <td className="py-4 font-medium text-foreground">
-                            <Link href={`/admin/applications/${opportunity.id}`}>
-                              <Button variant="ghost" size="sm" data-testid={`button-view-applicants-${opportunity.id}`}>
-                                {opportunity._count?.applications || 0}
-                              </Button>
-                            </Link>
+                            <Badge variant="outline" data-testid={`badge-applicants-${opportunity.id}`}>
+                              {opportunity._count?.applications || 0} applicants
+                            </Badge>
                           </td>
                           <td className="py-4 text-muted-foreground text-sm">
                             {opportunity.createdAt ? format(new Date(opportunity.createdAt), "MMM dd, yyyy") : "Unknown"}
                           </td>
-                          <td className="py-4">
+                          <td className="py-4" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center space-x-2">
                               <Link href={`/admin/opportunities/${opportunity.id}/edit`}>
                                 <Button
@@ -390,15 +474,6 @@ export default function AdminOpportunities() {
                                   data-testid={`button-edit-${opportunity.id}`}
                                 >
                                   <i className="fas fa-edit"></i>
-                                </Button>
-                              </Link>
-                              <Link href={`/admin/applications/${opportunity.id}`}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  data-testid={`button-view-applications-${opportunity.id}`}
-                                >
-                                  <i className="fas fa-users"></i>
                                 </Button>
                               </Link>
                               <AlertDialog>
@@ -483,6 +558,161 @@ export default function AdminOpportunities() {
       </main>
 
       <Footer />
+
+      {/* Applicant Management Modal */}
+      <Dialog open={!!selectedOpportunityId} onOpenChange={() => setSelectedOpportunityId(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Applicants - {selectedOpportunity?.title}</DialogTitle>
+            <DialogDescription>
+              Review and manage applications for this opportunity
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {applicantsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                ))}
+              </div>
+            ) : applicants && applicants.length > 0 ? (
+              applicants.map((application) => (
+                <div key={application.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <p className="font-medium text-foreground">
+                        {application.user.firstName} {application.user.lastName}
+                      </p>
+                      <Badge className={
+                        application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        application.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
+                      }>
+                        {(application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{application.user.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Applied: {format(new Date(application.appliedAt!), "MMM dd, yyyy 'at' h:mm a")}
+                    </p>
+                    {application.completedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Completed: {format(new Date(application.completedAt!), "MMM dd, yyyy 'at' h:mm a")}
+                      </p>
+                    )}
+                    {application.hoursCompleted && (
+                      <p className="text-xs text-green-600">
+                        Hours: {application.hoursCompleted} | Coins: {application.coinsAwarded || 0}
+                      </p>
+                    )}
+                    {application.adminFeedback && (
+                      <p className="text-xs text-blue-600">
+                        Feedback: {application.adminFeedback}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {(application.status || 'pending') === 'pending' && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleApplicantAction(application.id, 'reject')}
+                          data-testid={`button-reject-${application.id}`}
+                        >
+                          <i className="fas fa-times mr-1"></i>
+                          Reject
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApplicantAction(application.id, 'approve')}
+                          data-testid={`button-approve-${application.id}`}
+                        >
+                          <i className="fas fa-check mr-1"></i>
+                          Approve
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-users text-muted-foreground text-xl"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No Applications</h3>
+                <p className="text-muted-foreground">
+                  No students have applied for this opportunity yet.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve with Hours/Feedback Dialog */}
+      <Dialog open={!!applicantAction} onOpenChange={() => setApplicantAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Application</DialogTitle>
+            <DialogDescription>
+              Set hours completed and provide feedback for this volunteer work
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="hours">Hours Completed</Label>
+              <Input
+                id="hours"
+                type="number"
+                placeholder="Enter hours completed"
+                value={hoursCompleted}
+                onChange={(e) => setHoursCompleted(e.target.value)}
+                data-testid="input-hours-completed"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="feedback">Admin Feedback</Label>
+              <Textarea
+                id="feedback"
+                placeholder="Provide feedback on the volunteer's work"
+                value={adminFeedback}
+                onChange={(e) => setAdminFeedback(e.target.value)}
+                rows={3}
+                data-testid="textarea-admin-feedback"
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setApplicantAction(null)}
+              data-testid="button-cancel-approval"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApproveWithDetails}
+              disabled={updateApplicationMutation.isPending}
+              data-testid="button-confirm-approval"
+            >
+              {updateApplicationMutation.isPending ? "Approving..." : "Approve & Complete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

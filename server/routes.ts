@@ -257,8 +257,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let application;
       
-      if (status === "completed" && coinsAwarded) {
-        application = await storage.markApplicationCompleted(id, coinsAwarded, hoursCompleted, adminFeedback);
+      if (status === "completed") {
+        // Calculate coins automatically: 1 hour = 10 coins
+        const calculatedCoins = hoursCompleted ? Math.round(hoursCompleted * 10) : 0;
+        application = await storage.markApplicationCompleted(id, calculatedCoins, hoursCompleted, adminFeedback);
       } else {
         application = await storage.updateApplicationStatus(id, status, notes);
       }
