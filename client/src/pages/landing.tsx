@@ -81,10 +81,10 @@ export default function Landing() {
                       <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-red-400 to-red-600 border-2 border-white"></div>
                     ))}
                   </div>
-                  <span className="text-sm text-gray-600 font-medium">500+ Active Students</span>
+                  <span className="text-sm text-gray-600 font-medium">IIMB Student Community</span>
                 </div>
                 <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 shadow-sm">
-                  ⭐ Top Ranked Platform
+                  🎓 IIMB Official Platform
                 </Badge>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function Landing() {
                       <span className="text-gray-700 font-medium">Total Impact Score</span>
                       <div className="flex items-center space-x-2">
                         <div className="coin-icon scale-75">₹</div>
-                        <span className="text-2xl font-bold text-amber-600">1,247</span>
+                        <span className="text-2xl font-bold text-amber-600">---</span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
@@ -118,12 +118,12 @@ export default function Landing() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-red-600">12</div>
+                        <div className="text-lg font-bold text-red-600">--</div>
                         <div className="text-xs text-gray-500">Projects</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-amber-600">45h</div>
-                        <div className="text-xs text-gray-500">Contributed</div>
+                        <div className="text-lg font-bold text-amber-600">--</div>
+                        <div className="text-xs text-gray-500">Hours</div>
                       </div>
                     </div>
                   </CardContent>
@@ -132,12 +132,12 @@ export default function Landing() {
                 {/* Floating Badges */}
                 <div className="absolute -top-4 -right-4 floating-element">
                   <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 shadow-lg">
-                    🏆 Top Contributor
+                    🎓 IIMB Student
                   </Badge>
                 </div>
                 <div className="absolute -bottom-4 -left-4 floating-element" style={{animationDelay: '2s'}}>
                   <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 shadow-lg">
-                    ✨ Impact Leader
+                    🌱 Social Impact
                   </Badge>
                 </div>
               </div>
@@ -205,41 +205,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-red-600 to-red-700">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Measurable Impact at Scale
-            </h2>
-            <p className="text-red-100 text-xl max-w-2xl mx-auto">
-              Join a thriving community of change-makers who are actively transforming lives and communities.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-3 pulse-primary">500+</div>
-              <div className="text-red-100 font-medium text-lg">Active Students</div>
-              <div className="text-red-200 text-sm mt-1">Engaged in social work</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-3 pulse-primary">150+</div>
-              <div className="text-red-100 font-medium text-lg">Live Opportunities</div>
-              <div className="text-red-200 text-sm mt-1">Available for participation</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-3 pulse-primary">2,500+</div>
-              <div className="text-red-100 font-medium text-lg">Impact Hours</div>
-              <div className="text-red-200 text-sm mt-1">Total time contributed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-3 pulse-primary">75+</div>
-              <div className="text-red-100 font-medium text-lg">Partner NGOs</div>
-              <div className="text-red-200 text-sm mt-1">Trusted collaborations</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-amber-50">
@@ -273,7 +238,7 @@ export default function Landing() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-sm">Trusted by 500+ students</span>
+                  <span className="text-sm">Official IIMB Platform</span>
                 </div>
               </div>
             </CardContent>
