@@ -61,10 +61,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const filters = {
         search: search as string,
-        type: type ? (Array.isArray(type) ? type as string[] : [type as string]) : undefined,
-        duration: duration ? (Array.isArray(duration) ? duration as string[] : [duration as string]) : undefined,
-        skills: skills ? (Array.isArray(skills) ? skills as string[] : [skills as string]) : undefined,
-        status: status ? (Array.isArray(status) ? status as string[] : [status as string]) : undefined,
+        type: type ? (Array.isArray(type) ? type as string[] : typeof type === 'string' ? [type as string] : []) : undefined,
+        duration: duration ? (Array.isArray(duration) ? duration as string[] : typeof duration === 'string' ? [duration as string] : []) : undefined,
+        skills: skills ? (Array.isArray(skills) ? skills as string[] : typeof skills === 'string' ? [skills as string] : []) : undefined,
+        status: status ? (Array.isArray(status) ? status as string[] : typeof status === 'string' ? [status as string] : []) : undefined,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
       };
