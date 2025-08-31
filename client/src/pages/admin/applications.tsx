@@ -159,7 +159,7 @@ export default function Applications() {
 
   const handleUpdateStatus = (application: ApplicationWithDetails) => {
     setSelectedApplication(application);
-    setNewStatus(application.status);
+    setNewStatus(application.status || 'pending');
     setNotes(application.notes || "");
     setCoinsAwarded(application.coinsAwarded || opportunity.coinsReward || 1);
     setUpdateDialogOpen(true);
@@ -361,15 +361,15 @@ export default function Applications() {
                             }
                           </td>
                           <td className="py-4">
-                            <Badge className={getStatusColor(application.status)}>
-                              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                            <Badge className={getStatusColor(application.status || 'pending')}>
+                              {(application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1)}
                             </Badge>
                           </td>
                           <td className="py-4">
-                            {application.coinsAwarded > 0 ? (
+                            {(application.coinsAwarded || 0) > 0 ? (
                               <div className="flex items-center space-x-1">
                                 <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
-                                <span className="font-medium">{application.coinsAwarded}</span>
+                                <span className="font-medium">{application.coinsAwarded || 0}</span>
                               </div>
                             ) : (
                               <span className="text-muted-foreground">-</span>

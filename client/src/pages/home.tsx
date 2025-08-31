@@ -22,7 +22,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
-  const { data: opportunitiesData, isLoading } = useQuery({
+  const { data: opportunitiesData, isLoading } = useQuery<{opportunities: OpportunityWithCreator[], total: number}>({
     queryKey: ["/api/opportunities", {
       search: searchQuery,
       ...filters,

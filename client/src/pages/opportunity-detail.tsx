@@ -23,11 +23,11 @@ export default function OpportunityDetail() {
   const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   const { data: opportunity, isLoading } = useQuery<OpportunityWithCreator>({
-    queryKey: ["/api/opportunities", id],
+    queryKey: [`/api/opportunities/${id}`],
   });
 
   const { data: userApplications } = useQuery<any[]>({
-    queryKey: ["/api/applications/user", user?.id],
+    queryKey: [`/api/applications/user/${user?.id}`],
     enabled: !!user?.id,
   });
 
