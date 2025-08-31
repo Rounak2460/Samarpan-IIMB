@@ -52,133 +52,209 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-6 py-8">
         {/* Hero Section */}
-        <section className="text-center py-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Find Ways to <span className="text-primary">Contribute</span>
-          </h1>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Discover meaningful social work opportunities within and around IIM Bangalore. Make a difference while earning coins and badges.
-          </p>
-          
-          {/* Global Search */}
-          <div className="max-w-md mx-auto relative">
-            <Input
-              type="text"
-              placeholder="Search opportunities..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-12"
-              data-testid="input-search"
-            />
-            <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+        <section className="text-center py-16 bg-gradient-to-br from-red-50 via-white to-amber-50 rounded-3xl mb-12 border border-red-100 shadow-lg">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
+                Discover Your Next
+                <span className="block bg-gradient-to-r from-red-600 to-amber-500 bg-clip-text text-transparent">
+                  Social Impact
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Explore curated volunteer opportunities designed for IIM Bangalore students. Make meaningful contributions to society while building your leadership profile and earning recognition.
+              </p>
+            </div>
+            
+            {/* Global Search */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative group">
+                <Input
+                  type="text"
+                  placeholder="Search opportunities by title, type, or organization..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-14 pr-4 py-4 text-lg rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-0 shadow-sm group-hover:border-red-300 transition-all duration-300"
+                  data-testid="input-search"
+                />
+                <svg className="w-6 h-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-red-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              
+              {/* Search Stats */}
+              <div className="flex items-center justify-center space-x-8 mt-6 text-sm text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>150+ Active Opportunities</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V7h10v2z"/>
+                  </svg>
+                  <span>75+ Partner Organizations</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:col-span-1">
-            <FiltersSidebar
-              filters={filters}
-              onFiltersChange={handleFilterChange}
-              onClearFilters={clearFilters}
-            />
-            <LeaderboardSidebar />
+          {/* Enhanced Sidebar */}
+          <aside className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <FiltersSidebar
+                filters={filters}
+                onFiltersChange={handleFilterChange}
+                onClearFilters={clearFilters}
+              />
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <LeaderboardSidebar />
+            </div>
           </aside>
 
-          {/* Opportunities Grid */}
+          {/* Main Content Area */}
           <div className="lg:col-span-3">
-            {/* Sorting and Results Info */}
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-sm text-muted-foreground" data-testid="text-results-count">
-                Showing {opportunities.length} of {totalOpportunities} opportunities
-              </p>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48" data-testid="select-sort">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Sort by: Newest</SelectItem>
-                  <SelectItem value="ending-soon">Sort by: Ending Soon</SelectItem>
-                  <SelectItem value="most-applied">Sort by: Most Applied</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Enhanced Header */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold text-gray-900" data-testid="text-results-count">
+                    {opportunities.length} of {totalOpportunities} Opportunities
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Find your perfect social impact opportunity
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-60 bg-gray-50 border-gray-200 hover:border-red-300 transition-colors duration-300" data-testid="select-sort">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">📅 Newest First</SelectItem>
+                      <SelectItem value="ending-soon">⏰ Ending Soon</SelectItem>
+                      <SelectItem value="most-applied">🔥 Most Popular</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             {/* Opportunities Grid */}
             {isLoading ? (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="space-y-4">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-1/2" />
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+                    <Skeleton className="h-48 w-full" />
+                    <div className="p-6 space-y-3">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex justify-between pt-4">
+                        <Skeleton className="h-8 w-20" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : opportunities.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-search text-muted-foreground text-xl"></i>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">No opportunities found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your filters or search terms
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">No Opportunities Found</h3>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                  We couldn't find any opportunities matching your criteria. Try adjusting your filters or search terms to discover more ways to make an impact.
                 </p>
-                <Button variant="outline" onClick={clearFilters} data-testid="button-clear-filters">
-                  Clear Filters
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters} 
+                  className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 px-6 py-3 rounded-xl"
+                  data-testid="button-clear-filters"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Clear All Filters
                 </Button>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 {opportunities.map((opportunity: OpportunityWithCreator) => (
                   <OpportunityCard key={opportunity.id} opportunity={opportunity} />
                 ))}
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Enhanced Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-4 mt-8">
-                <Button
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  data-testid="button-prev-page"
-                >
-                  <i className="fas fa-chevron-left mr-1"></i>Previous
-                </Button>
-                
-                <div className="flex space-x-2">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        data-testid={`button-page-${page}`}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mt-8">
+                <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                  <div className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages} • {totalOpportunities} total opportunities
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      variant="outline"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="bg-gray-50 border-gray-200 hover:bg-red-50 hover:border-red-300 px-4 py-2 rounded-xl transition-all duration-300 disabled:opacity-50"
+                      data-testid="button-prev-page"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Previous
+                    </Button>
+                    
+                    <div className="flex space-x-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className={currentPage === page 
+                              ? "bg-gradient-to-r from-red-600 to-red-700 text-white border-0 w-10 h-10 rounded-xl font-semibold" 
+                              : "bg-gray-50 border-gray-200 hover:bg-red-50 hover:border-red-300 w-10 h-10 rounded-xl transition-all duration-300"
+                            }
+                            data-testid={`button-page-${page}`}
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="bg-gray-50 border-gray-200 hover:bg-red-50 hover:border-red-300 px-4 py-2 rounded-xl transition-all duration-300 disabled:opacity-50"
+                      data-testid="button-next-page"
+                    >
+                      Next
+                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Button>
+                  </div>
                 </div>
-                
-                <Button
-                  variant="outline"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  data-testid="button-next-page"
-                >
-                  Next<i className="fas fa-chevron-right ml-1"></i>
-                </Button>
               </div>
             )}
           </div>

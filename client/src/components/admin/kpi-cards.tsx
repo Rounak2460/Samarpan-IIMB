@@ -16,16 +16,20 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
     return (
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-16" />
+          <Card key={i} className="bg-white shadow-lg border-0 rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-10 w-20" />
                 </div>
-                <Skeleton className="h-12 w-12 rounded-full" />
+                <Skeleton className="h-14 w-14 rounded-2xl" />
               </div>
-              <Skeleton className="h-4 w-20 mt-4" />
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -37,9 +41,13 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
     {
       title: "Active Opportunities",
       value: analytics?.totalOpportunities || 0,
-      icon: "fas fa-clipboard-list",
-      iconColor: "text-primary",
-      bgColor: "bg-primary/10",
+      icon: (
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      ),
+      bgGradient: "from-red-500 to-red-600",
+      cardGradient: "from-red-50 to-red-100",
       change: "+12%",
       changeType: "positive",
       testId: "kpi-opportunities",
@@ -47,9 +55,13 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
     {
       title: "Total Applications",
       value: analytics?.totalApplications || 0,
-      icon: "fas fa-users",
-      iconColor: "text-chart-1",
-      bgColor: "bg-chart-1/10",
+      icon: (
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
+      bgGradient: "from-blue-500 to-blue-600",
+      cardGradient: "from-blue-50 to-blue-100",
       change: "+28%",
       changeType: "positive",
       testId: "kpi-applications",
@@ -58,9 +70,13 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       title: "Apply Rate",
       value: `${(analytics?.averageApplyRate || 0).toFixed(1)}`,
       suffix: "%",
-      icon: "fas fa-chart-line",
-      iconColor: "text-chart-2",
-      bgColor: "bg-chart-2/10",
+      icon: (
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        </svg>
+      ),
+      bgGradient: "from-green-500 to-green-600",
+      cardGradient: "from-green-50 to-green-100",
       change: "-3.2%",
       changeType: "negative",
       testId: "kpi-apply-rate",
@@ -69,9 +85,13 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       title: "Completion Rate",
       value: `${(analytics?.completionRate || 0).toFixed(1)}`,
       suffix: "%",
-      icon: "fas fa-check-circle",
-      iconColor: "text-chart-3",
-      bgColor: "bg-chart-3/10",
+      icon: (
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        </svg>
+      ),
+      bgGradient: "from-amber-500 to-amber-600",
+      cardGradient: "from-amber-50 to-amber-100",
       change: "+5.4%",
       changeType: "positive",
       testId: "kpi-completion-rate",
@@ -81,25 +101,29 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {kpiData.map((kpi) => (
-        <Card key={kpi.title}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium">{kpi.title}</p>
-                <p className="text-2xl font-bold text-foreground mt-1" data-testid={kpi.testId}>
+        <Card key={kpi.title} className={`bg-gradient-to-br ${kpi.cardGradient} shadow-lg border-0 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
+          <CardContent className="p-8">
+            <div className="flex items-start justify-between mb-6">
+              <div className="space-y-2">
+                <p className="text-gray-600 text-sm font-medium uppercase tracking-wide">{kpi.title}</p>
+                <p className="text-4xl font-bold text-gray-900" data-testid={kpi.testId}>
                   {kpi.value}{kpi.suffix}
                 </p>
               </div>
-              <div className={`w-12 h-12 ${kpi.bgColor} rounded-full flex items-center justify-center`}>
-                <i className={`${kpi.icon} ${kpi.iconColor} text-xl`}></i>
+              <div className={`w-14 h-14 bg-gradient-to-br ${kpi.bgGradient} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                {kpi.icon}
               </div>
             </div>
-            <div className="flex items-center mt-4 text-sm">
-              <i className={`fas ${kpi.changeType === "positive" ? "fa-arrow-up text-green-500" : "fa-arrow-down text-red-500"} mr-1`}></i>
-              <span className={`font-medium ${kpi.changeType === "positive" ? "text-green-500" : "text-red-500"}`}>
-                {kpi.change}
-              </span>
-              <span className="text-muted-foreground ml-1">from last month</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-sm">
+                <svg className={`w-4 h-4 mr-1 ${kpi.changeType === "positive" ? "text-green-500" : "text-red-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={kpi.changeType === "positive" ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} />
+                </svg>
+                <span className={`font-semibold ${kpi.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>
+                  {kpi.change}
+                </span>
+              </div>
+              <span className="text-gray-500 text-xs font-medium">vs last month</span>
             </div>
           </CardContent>
         </Card>

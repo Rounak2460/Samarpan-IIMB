@@ -7,7 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertOpportunitySchema } from "@shared/schema";
+import { insertOpportunitySchema, type OpportunityWithCreator } from "@shared/schema";
 import { z } from "zod";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -63,7 +63,7 @@ export default function OpportunityForm() {
     }
   }, [user, authLoading, toast]);
 
-  const { data: opportunity, isLoading: opportunityLoading } = useQuery({
+  const { data: opportunity, isLoading: opportunityLoading } = useQuery<OpportunityWithCreator>({
     queryKey: ["/api/opportunities", id],
     enabled: isEditing && !!user && user.role === "admin",
   });
