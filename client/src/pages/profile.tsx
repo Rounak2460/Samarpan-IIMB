@@ -13,10 +13,12 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import type { ApplicationWithDetails, Badge as BadgeType } from "@shared/schema";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Profile() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -26,7 +28,7 @@ export default function Profile() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
       return;
     }
@@ -47,7 +49,7 @@ export default function Profile() {
     queryKey: ["/api/badges"],
   });
 
-  const { data: leaderboard } = useQuery({
+  const { data: leaderboard } = useQuery<any[]>({
     queryKey: ["/api/leaderboard"],
   });
 
@@ -69,7 +71,7 @@ export default function Profile() {
     return null;
   }
 
-  const userRank = leaderboard?.findIndex((u: any) => u.id === user.id) + 1 || 0;
+  const userRank = leaderboard ? leaderboard.findIndex((u: any) => u.id === user.id) + 1 : 0;
   const completedApplications = applications?.filter(app => app.status === "completed") || [];
   const totalCoinsEarned = completedApplications.reduce((sum, app) => sum + (app.coinsAwarded || 0), 0);
 
@@ -211,10 +213,10 @@ export default function Profile() {
                             </p>
                           </div>
                           <div className="flex items-center space-x-4">
-                            <Badge className={getStatusColor(application.status)}>
-                              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                            <Badge className={getStatusColor(application.status || "pending")}>
+                              {application.status ? application.status.charAt(0).toUpperCase() + application.status.slice(1) : "Pending"}
                             </Badge>
-                            {application.coinsAwarded > 0 && (
+                            {(application.coinsAwarded || 0) > 0 && (
                               <div className="flex items-center space-x-1">
                                 <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
                                 <span className="text-sm font-medium">+{application.coinsAwarded}</span>
@@ -332,12 +334,91 @@ export default function Profile() {
                     <div className="space-y-2">
                       <Button
                         variant="outline"
-                        onClick={() => window.location.href = '/api/logout'}
+                        onClick={async () => {
+                          try {
+                            await fetch('/api/logout', { 
+                              method: 'POST', 
+                              credentials: 'include' 
+                            });
+                            window.location.href = '/';
+                          } catch (error) {
+                            console.error('Logout error:', error);
+                            window.location.href = '/';
+                          }
+                        }}
                         data-testid="button-logout"
                       >
                         <i className="fas fa-sign-out-alt mr-2"></i>
                         Logout
                       </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700"
+                            data-testid="button-delete-account"
+                          >
+                            <i className="fas fa-trash mr-2"></i>
+                            Delete Account
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="max-w-md">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-red-600">Delete Account</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete your account and remove all your data from our servers, including:
+                              <ul className="mt-2 list-disc list-inside text-sm space-y-1">
+                                <li>All your applications and activity history</li>
+                                <li>Earned coins and badges</li>
+                                <li>Profile information and preferences</li>
+                              </ul>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={isDeletingAccount}
+                              onClick={async () => {
+                                setIsDeletingAccount(true);
+                                try {
+                                  const response = await fetch('/api/auth/account', {
+                                    method: 'DELETE',
+                                    credentials: 'include',
+                                  });
+                                  
+                                  if (response.ok) {
+                                    toast({
+                                      title: "Account Deleted",
+                                      description: "Your account has been permanently deleted.",
+                                    });
+                                    window.location.href = '/';
+                                  } else {
+                                    const data = await response.json();
+                                    toast({
+                                      title: "Deletion Failed",
+                                      description: data.message || "Unable to delete account",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                } catch (error) {
+                                  toast({
+                                    title: "Connection Error",
+                                    description: "Unable to connect to server",
+                                    variant: "destructive",
+                                  });
+                                } finally {
+                                  setIsDeletingAccount(false);
+                                }
+                              }}
+                              data-testid="button-confirm-delete"
+                            >
+                              {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardContent>

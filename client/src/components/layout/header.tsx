@@ -234,7 +234,18 @@ export default function Header() {
                     </div>
                     <DropdownMenuSeparator className="my-3" />
                     <DropdownMenuItem
-                      onClick={() => window.location.href = '/api/logout'}
+                      onClick={async () => {
+                        try {
+                          await fetch('/api/logout', { 
+                            method: 'POST', 
+                            credentials: 'include' 
+                          });
+                          window.location.href = '/';
+                        } catch (error) {
+                          console.error('Logout error:', error);
+                          window.location.href = '/';
+                        }
+                      }}
                       className="flex items-center p-3 rounded-lg hover:bg-red-50 transition-colors text-red-600 hover:text-red-700"
                       data-testid="menu-logout"
                     >
@@ -251,7 +262,7 @@ export default function Header() {
               </>
             ) : (
               <Button
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/login'}
                 className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold px-8 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                 data-testid="button-login"
               >

@@ -21,6 +21,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Account deletion route
+  app.delete('/api/auth/account', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.deleteUser(userId);
+      
+      // Logout after deleting account
+      req.logout((err: any) => {
+        if (err) {
+          console.error('Logout error after account deletion:', err);
+        }
+        req.session.destroy((destroyErr: any) => {
+          if (destroyErr) {
+            console.error('Session destroy error:', destroyErr);
+          }
+          res.clearCookie('connect.sid');
+          res.json({ message: 'Account deleted successfully' });
+        });
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
   // Opportunity routes
   app.get("/api/opportunities", async (req, res) => {
     try {

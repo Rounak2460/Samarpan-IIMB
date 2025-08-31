@@ -26,6 +26,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   getUserWithStats(id: string): Promise<UserWithStats | undefined>;
   updateUserCoins(userId: string, coins: number): Promise<void>;
+  deleteUser(userId: string): Promise<void>;
   getLeaderboard(limit?: number, timeframe?: string): Promise<UserWithStats[]>;
 
   // Opportunity operations
@@ -155,6 +156,14 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ coins: sql`${users.coins} + ${coins}`, updatedAt: new Date() })
       .where(eq(users.id, userId));
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    // Delete all related data first
+    await db.delete(applications).where(eq(applications.userId, userId));
+    await db.delete(userBadges).where(eq(userBadges.userId, userId));
+    // Delete the user
+    await db.delete(users).where(eq(users.id, userId));
   }
 
   async getLeaderboard(limit = 10, timeframe = "all"): Promise<UserWithStats[]> {

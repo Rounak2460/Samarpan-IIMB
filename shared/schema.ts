@@ -196,20 +196,23 @@ export type Application = typeof applications.$inferSelect;
 export type Badge = typeof badges.$inferSelect;
 export type UserBadge = typeof userBadges.$inferSelect;
 
+// Public user type (without password for API responses)
+export type PublicUser = Omit<User, 'password'>;
+
 // Extended types with relations
 export type OpportunityWithCreator = Opportunity & {
-  creator: User;
+  creator: PublicUser;
   _count?: {
     applications: number;
   };
 };
 
 export type ApplicationWithDetails = Application & {
-  user: User;
+  user: PublicUser;
   opportunity: Opportunity;
 };
 
-export type UserWithStats = User & {
+export type UserWithStats = PublicUser & {
   _count?: {
     applications: number;
     completedApplications: number;
