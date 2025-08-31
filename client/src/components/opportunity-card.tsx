@@ -55,16 +55,17 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
   };
 
   return (
-    <Card className="opportunity-card bg-card rounded-xl shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="opportunity-card bg-card rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 enterprise-fade-in group">
       <CardContent className="p-0">
         {/* Image */}
-        <div className="w-full h-32 overflow-hidden rounded-t-xl">
+        <div className="w-full h-32 overflow-hidden rounded-t-xl relative">
           <img
             src={opportunity.imageUrl || getDefaultImage(opportunity.type)}
             alt={opportunity.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             data-testid="img-opportunity-card"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
 
         <div className="p-6">

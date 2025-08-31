@@ -153,15 +153,24 @@ export default function Home() {
             {isLoading ? (
               <div className="grid md:grid-cols-2 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-                    <Skeleton className="h-48 w-full" />
-                    <div className="p-6 space-y-3">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-2/3" />
-                      <div className="flex justify-between pt-4">
-                        <Skeleton className="h-8 w-20" />
-                        <Skeleton className="h-8 w-24" />
+                  <div key={i} className="opportunity-card enterprise-skeleton overflow-hidden animate-pulse">
+                    <div className="h-32 w-full bg-gradient-to-r from-gray-100 to-gray-200"></div>
+                    <div className="p-6 space-y-4">
+                      <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gradient-to-r from-gray-150 to-gray-250 rounded w-full"></div>
+                        <div className="h-4 bg-gradient-to-r from-gray-150 to-gray-250 rounded w-2/3"></div>
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-6 bg-gradient-to-r from-red-100 to-red-200 rounded-full w-20"></div>
+                        <div className="h-6 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full w-16"></div>
+                      </div>
+                      <div className="flex justify-between items-center pt-2">
+                        <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-20"></div>
+                        <div className="flex items-center space-x-2">
+                          <div className="h-4 bg-gradient-to-r from-amber-100 to-amber-200 rounded w-16"></div>
+                          <div className="h-8 bg-gradient-to-r from-red-200 to-red-300 rounded-lg w-16"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -192,8 +201,14 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-6">
-                {opportunities.map((opportunity: OpportunityWithCreator) => (
-                  <OpportunityCard key={opportunity.id} opportunity={opportunity} />
+                {opportunities.map((opportunity: OpportunityWithCreator, index) => (
+                  <div 
+                    key={opportunity.id} 
+                    className="enterprise-fade-in" 
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <OpportunityCard opportunity={opportunity} />
+                  </div>
                 ))}
               </div>
             )}

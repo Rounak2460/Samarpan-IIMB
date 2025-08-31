@@ -194,7 +194,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(users)
       .leftJoin(applications, eq(users.id, applications.userId))
-      .where(dateFilter)
+      .where(sql`${dateFilter} AND ${users.role} = 'student'`)
       .groupBy(users.id)
       .orderBy(desc(users.coins), desc(sql`COUNT(CASE WHEN ${applications.status} = 'completed' THEN 1 END)`))
       .limit(limit);

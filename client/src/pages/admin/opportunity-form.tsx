@@ -101,18 +101,18 @@ export default function OpportunityForm() {
         fullDescription: opportunity.fullDescription,
         type: opportunity.type,
         duration: opportunity.duration,
-        customDuration: opportunity.customDuration || "",
+        customDuration: opportunity.customDuration ?? "",
         skills: opportunity.skills || [],
-        location: opportunity.location || "",
-        schedule: opportunity.schedule || "",
-        capacity: opportunity.capacity || undefined,
+        location: opportunity.location ?? "",
+        schedule: opportunity.schedule ?? "",
+        capacity: opportunity.capacity ?? undefined,
         status: opportunity.status,
         coinsPerHour: opportunity.coinsPerHour,
         maxCoins: opportunity.maxCoins,
-        visibility: opportunity.visibility || "public",
-        contactEmail: opportunity.contactEmail || "",
-        contactPhone: opportunity.contactPhone || "",
-        imageUrl: opportunity.imageUrl || "",
+        visibility: opportunity.visibility ?? "public",
+        contactEmail: opportunity.contactEmail ?? "",
+        contactPhone: opportunity.contactPhone ?? "",
+        imageUrl: opportunity.imageUrl ?? "",
         createdBy: opportunity.createdBy,
       });
       setSelectedSkills(opportunity.skills || []);
@@ -371,6 +371,7 @@ export default function OpportunityForm() {
                                   placeholder="e.g., 3 hours/week for 6 weeks"
                                   data-testid="input-custom-duration"
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -420,6 +421,7 @@ export default function OpportunityForm() {
                                   placeholder="e.g., IIM Bangalore Campus"
                                   data-testid="input-location"
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -438,6 +440,7 @@ export default function OpportunityForm() {
                                   placeholder="e.g., Weekends 2-4 PM"
                                   data-testid="input-schedule"
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -459,6 +462,7 @@ export default function OpportunityForm() {
                                   placeholder="Max participants"
                                   data-testid="input-capacity"
                                   {...field}
+                                  value={field.value ?? ""}
                                   onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                                 />
                               </FormControl>
@@ -483,6 +487,7 @@ export default function OpportunityForm() {
                                   placeholder="Coins earned per hour"
                                   data-testid="input-coins-per-hour"
                                   {...field}
+                                  value={field.value ?? 10}
                                   onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                                 />
                               </FormControl>
@@ -505,6 +510,7 @@ export default function OpportunityForm() {
                                 placeholder="Maximum coins earnable"
                                 data-testid="input-max-coins"
                                 {...field}
+                                value={field.value ?? 100}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 100)}
                               />
                             </FormControl>
@@ -529,6 +535,7 @@ export default function OpportunityForm() {
                                   placeholder="contact@example.com"
                                   data-testid="input-contact-email"
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -548,6 +555,7 @@ export default function OpportunityForm() {
                                   placeholder="+91 98765 43210"
                                   data-testid="input-contact-phone"
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -568,6 +576,7 @@ export default function OpportunityForm() {
                                 placeholder="https://example.com/image.jpg"
                                 data-testid="input-image-url"
                                 {...field}
+                                value={field.value ?? ""}
                               />
                             </FormControl>
                             <FormDescription>
@@ -594,7 +603,7 @@ export default function OpportunityForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value ?? "open"}>
                               <FormControl>
                                 <SelectTrigger data-testid="select-status">
                                   <SelectValue placeholder="Select status" />
@@ -617,7 +626,7 @@ export default function OpportunityForm() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Visibility</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value ?? "public"}>
                               <FormControl>
                                 <SelectTrigger data-testid="select-visibility">
                                   <SelectValue placeholder="Select visibility" />
@@ -651,7 +660,7 @@ export default function OpportunityForm() {
                         <div className="flex items-center space-x-1 text-primary">
                           <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
                           <span className="text-sm font-medium">
-                            {form.watch("coinsReward") || 1}
+                            {form.watch("coinsPerHour") || 10}/hr (max {form.watch("maxCoins") || 100})
                           </span>
                         </div>
                       </div>
