@@ -275,7 +275,7 @@ export default function OpportunityDetail() {
                   <div className="text-center space-y-4">
                     <div className="flex items-center justify-center space-x-2 text-2xl font-bold text-primary">
                       <div className="coin-icon">₹</div>
-                      <span data-testid="text-coins-reward">{opportunity.coinsReward}</span>
+                      <span data-testid="text-coins-reward">{opportunity.coinsPerHour}/hr (max {opportunity.maxCoins})</span>
                       <span className="text-sm text-muted-foreground font-normal">coins reward</span>
                     </div>
 

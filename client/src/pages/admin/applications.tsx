@@ -167,7 +167,12 @@ export default function Applications() {
     setSelectedApplication(application);
     setNewStatus(application.status || 'pending');
     setNotes(application.notes || "");
-    setCoinsAwarded(application.coinsAwarded || opportunity.coinsReward || 1);
+    // Calculate default coins based on hourly rate and max limit
+    const defaultCoins = Math.min(
+      Math.round((application.hoursCompleted || 1) * (opportunity.coinsPerHour || 10)),
+      opportunity.maxCoins || 100
+    );
+    setCoinsAwarded(application.coinsAwarded || defaultCoins);
     setNewHours(application.hoursCompleted || 0);
     setNewFeedback(application.adminFeedback || "");
     setUpdateDialogOpen(true);
@@ -234,7 +239,7 @@ export default function Applications() {
                   <div className="space-y-1 text-sm">
                     <p><strong>Type:</strong> {opportunity.type.replace("_", " ").toUpperCase()}</p>
                     <p><strong>Duration:</strong> {opportunity.customDuration || opportunity.duration}</p>
-                    <p><strong>Coins Reward:</strong> {opportunity.coinsReward}</p>
+                    <p><strong>Coins Reward:</strong> {opportunity.coinsPerHour}/hr (max {opportunity.maxCoins})</p>
                   </div>
                 </div>
                 <div>

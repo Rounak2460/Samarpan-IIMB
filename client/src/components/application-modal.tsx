@@ -94,7 +94,7 @@ export default function ApplicationModal({
               <div className="flex items-center space-x-2">
                 <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
                 <span className="text-sm text-foreground">
-                  Reward: {opportunity.coinsReward} coins
+                  Reward: {opportunity.coinsPerHour}/hr (max {opportunity.maxCoins} coins)
                 </span>
               </div>
             </div>

@@ -258,8 +258,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let application;
       
       if (status === "completed") {
-        // Calculate coins automatically: 1 hour = 10 coins
-        const calculatedCoins = hoursCompleted ? Math.round(hoursCompleted * 10) : 0;
+        // Get opportunity details to calculate coins based on hourly rate and max limit
+        const opportunityApp = await storage.getApplicationById(id);
+        if (!opportunityApp || !opportunityApp.opportunity) {
+          return res.status(404).json({ message: "Application or opportunity not found" });
+        }
+        
+        const opportunity = opportunityApp.opportunity;
+        const coinsPerHour = opportunity.coinsPerHour || 10;
+        const maxCoins = opportunity.maxCoins || 100;
+        const hours = hoursCompleted || 0;
+        
+        // Calculate coins: hours * rate, but cap at max coins
+        const calculatedCoins = Math.min(Math.round(hours * coinsPerHour), maxCoins);
+        
         application = await storage.markApplicationCompleted(id, calculatedCoins, hoursCompleted, adminFeedback);
       } else {
         application = await storage.updateApplicationStatus(id, status, notes);

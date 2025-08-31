@@ -82,7 +82,8 @@ export default function OpportunityForm() {
       schedule: "",
       capacity: undefined,
       status: "open",
-      coinsReward: 1,
+      coinsPerHour: 10,
+      maxCoins: 100,
       visibility: "public",
       contactEmail: "",
       contactPhone: "",
@@ -106,7 +107,8 @@ export default function OpportunityForm() {
         schedule: opportunity.schedule || "",
         capacity: opportunity.capacity || undefined,
         status: opportunity.status,
-        coinsReward: opportunity.coinsReward,
+        coinsPerHour: opportunity.coinsPerHour,
+        maxCoins: opportunity.maxCoins,
         visibility: opportunity.visibility || "public",
         contactEmail: opportunity.contactEmail || "",
         contactPhone: opportunity.contactPhone || "",
@@ -470,18 +472,18 @@ export default function OpportunityForm() {
 
                         <FormField
                           control={form.control}
-                          name="coinsReward"
+                          name="coinsPerHour"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Coins Reward *</FormLabel>
+                              <FormLabel>Coins per Hour *</FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
                                   min="1"
-                                  placeholder="Number of coins"
-                                  data-testid="input-coins-reward"
+                                  placeholder="Coins earned per hour"
+                                  data-testid="input-coins-per-hour"
                                   {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -489,6 +491,30 @@ export default function OpportunityForm() {
                           )}
                         />
                       </div>
+
+                      <FormField
+                        control={form.control}
+                        name="maxCoins"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Maximum Coins *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="1"
+                                placeholder="Maximum coins earnable"
+                                data-testid="input-max-coins"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 100)}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Total coin cap regardless of hours worked
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       <div className="grid md:grid-cols-2 gap-4">
                         <FormField

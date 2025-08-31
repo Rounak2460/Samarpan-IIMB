@@ -23,7 +23,8 @@ interface DashboardApplication {
     title: string;
     shortDescription: string;
     type: string;
-    coinsReward: number;
+    coinsPerHour: number;
+    maxCoins: number;
     imageUrl?: string;
   };
 }
@@ -267,7 +268,7 @@ export default function StudentDashboard() {
                             <div className="text-center p-3 bg-muted/50 rounded">
                               <div className="flex items-center justify-center space-x-1 text-lg font-medium text-primary">
                                 <div className="coin-icon" style={{ fontSize: "14px" }}>₹</div>
-                                <span>{application.opportunity.coinsReward}</span>
+                                <span>{application.opportunity.coinsPerHour}/hr (max {application.opportunity.maxCoins})</span>
                               </div>
                               <div className="text-xs text-muted-foreground">Potential Reward</div>
                             </div>

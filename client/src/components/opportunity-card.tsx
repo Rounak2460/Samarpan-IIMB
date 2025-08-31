@@ -111,7 +111,7 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
               <div className="flex items-center space-x-1 text-primary">
                 <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
                 <span className="text-sm font-medium" data-testid="text-coins-reward">
-                  {opportunity.coinsReward}
+                  {opportunity.coinsPerHour}/hr (max {opportunity.maxCoins})
                 </span>
               </div>
               <Link href={`/opportunity/${opportunity.id}`}>

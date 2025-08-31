@@ -75,7 +75,8 @@ export const opportunities = pgTable("opportunities", {
   schedule: varchar("schedule"),
   capacity: integer("capacity"), // Max participants
   status: opportunityStatusEnum("status").default("open"),
-  coinsReward: integer("coins_reward").default(1), // Coins awarded on completion
+  coinsPerHour: integer("coins_per_hour").default(10), // Coins awarded per hour
+  maxCoins: integer("max_coins").default(100), // Maximum coins that can be earned
   visibility: varchar("visibility").default("public"), // public, private
   contactEmail: varchar("contact_email"),
   contactPhone: varchar("contact_phone"),
