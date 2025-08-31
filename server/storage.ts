@@ -55,7 +55,8 @@ export interface IStorage {
     status: "pending" | "accepted" | "completed" | "rejected",
     notes?: string
   ): Promise<Application | undefined>;
-  markApplicationCompleted(id: string, coinsAwarded: number): Promise<Application | undefined>;
+  markApplicationCompleted(id: string, coinsAwarded: number, hours?: number, feedback?: string): Promise<Application | undefined>;
+  getUserStats(userId: string): Promise<{totalApplications: number; completedApplications: number; totalHours: number; totalCoins: number}>;
   checkExistingApplication(userId: string, opportunityId: string): Promise<Application | undefined>;
 
   // Badge operations
@@ -548,6 +549,8 @@ export class DatabaseStorage implements IStorage {
         completedAt: applications.completedAt,
         notes: applications.notes,
         coinsAwarded: applications.coinsAwarded,
+        hoursCompleted: applications.hoursCompleted,
+        adminFeedback: applications.adminFeedback,
         userEmail: users.email,
         userFirstName: users.firstName,
         userLastName: users.lastName,
@@ -594,6 +597,8 @@ export class DatabaseStorage implements IStorage {
       completedAt: application.completedAt,
       notes: application.notes,
       coinsAwarded: application.coinsAwarded,
+      hoursCompleted: application.hoursCompleted,
+      adminFeedback: application.adminFeedback,
       user: {
         id: application.userId,
         email: application.userEmail,
@@ -643,6 +648,8 @@ export class DatabaseStorage implements IStorage {
         completedAt: applications.completedAt,
         notes: applications.notes,
         coinsAwarded: applications.coinsAwarded,
+        hoursCompleted: applications.hoursCompleted,
+        adminFeedback: applications.adminFeedback,
         userEmail: users.email,
         userFirstName: users.firstName,
         userLastName: users.lastName,
@@ -688,6 +695,8 @@ export class DatabaseStorage implements IStorage {
       completedAt: app.completedAt,
       notes: app.notes,
       coinsAwarded: app.coinsAwarded,
+      hoursCompleted: app.hoursCompleted,
+      adminFeedback: app.adminFeedback,
       user: {
         id: app.userId,
         email: app.userEmail,
@@ -737,6 +746,8 @@ export class DatabaseStorage implements IStorage {
         completedAt: applications.completedAt,
         notes: applications.notes,
         coinsAwarded: applications.coinsAwarded,
+        hoursCompleted: applications.hoursCompleted,
+        adminFeedback: applications.adminFeedback,
         userEmail: users.email,
         userFirstName: users.firstName,
         userLastName: users.lastName,
@@ -782,6 +793,8 @@ export class DatabaseStorage implements IStorage {
       completedAt: app.completedAt,
       notes: app.notes,
       coinsAwarded: app.coinsAwarded,
+      hoursCompleted: app.hoursCompleted,
+      adminFeedback: app.adminFeedback,
       user: {
         id: app.userId,
         email: app.userEmail,
@@ -840,13 +853,15 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async markApplicationCompleted(id: string, coinsAwarded: number): Promise<Application | undefined> {
+  async markApplicationCompleted(id: string, coinsAwarded: number, hours?: number, feedback?: string): Promise<Application | undefined> {
     const [updated] = await db
       .update(applications)
       .set({
         status: "completed",
         completedAt: new Date(),
         coinsAwarded,
+        hoursCompleted: hours || 0,
+        adminFeedback: feedback,
       })
       .where(eq(applications.id, id))
       .returning();
@@ -860,6 +875,25 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updated;
+  }
+
+  async getUserStats(userId: string): Promise<{totalApplications: number; completedApplications: number; totalHours: number; totalCoins: number}> {
+    const [stats] = await db
+      .select({
+        totalApplications: sql<number>`COUNT(${applications.id})`,
+        completedApplications: sql<number>`COUNT(CASE WHEN ${applications.status} = 'completed' THEN 1 END)`,
+        totalHours: sql<number>`COALESCE(SUM(CASE WHEN ${applications.hoursCompleted} IS NOT NULL THEN ${applications.hoursCompleted} ELSE 0 END), 0)`,
+        totalCoins: sql<number>`COALESCE(SUM(CASE WHEN ${applications.coinsAwarded} IS NOT NULL THEN ${applications.coinsAwarded} ELSE 0 END), 0)`,
+      })
+      .from(applications)
+      .where(eq(applications.userId, userId));
+
+    return {
+      totalApplications: Number(stats?.totalApplications || 0),
+      completedApplications: Number(stats?.completedApplications || 0),
+      totalHours: Number(stats?.totalHours || 0),
+      totalCoins: Number(stats?.totalCoins || 0),
+    };
   }
 
   async checkExistingApplication(userId: string, opportunityId: string): Promise<Application | undefined> {

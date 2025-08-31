@@ -38,6 +38,8 @@ export default function Applications() {
   const [selectedApplication, setSelectedApplication] = useState<ApplicationWithDetails | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [newHours, setNewHours] = useState<number>(0);
+  const [newFeedback, setNewFeedback] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [coinsAwarded, setCoinsAwarded] = useState(1);
 
@@ -71,11 +73,15 @@ export default function Applications() {
       status: string;
       notes?: string;
       coinsAwarded?: number;
+      hoursCompleted?: number;
+      adminFeedback?: string;
     }) => {
       await apiRequest("PUT", `/api/applications/${data.applicationId}/status`, {
         status: data.status,
         notes: data.notes,
         coinsAwarded: data.coinsAwarded,
+        hoursCompleted: data.hoursCompleted,
+        adminFeedback: data.adminFeedback,
       });
     },
     onSuccess: () => {
@@ -162,6 +168,8 @@ export default function Applications() {
     setNewStatus(application.status || 'pending');
     setNotes(application.notes || "");
     setCoinsAwarded(application.coinsAwarded || opportunity.coinsReward || 1);
+    setNewHours(application.hoursCompleted || 0);
+    setNewFeedback(application.adminFeedback || "");
     setUpdateDialogOpen(true);
   };
 
@@ -173,6 +181,8 @@ export default function Applications() {
       status: newStatus,
       notes: notes,
       coinsAwarded: newStatus === "completed" ? coinsAwarded : undefined,
+      hoursCompleted: newStatus === "completed" ? newHours : undefined,
+      adminFeedback: newStatus === "completed" ? newFeedback : undefined,
     });
   };
 
@@ -436,17 +446,43 @@ export default function Applications() {
             </div>
 
             {newStatus === "completed" && (
-              <div>
-                <Label htmlFor="coins">Coins to Award</Label>
-                <Input
-                  id="coins"
-                  type="number"
-                  min="1"
-                  value={coinsAwarded}
-                  onChange={(e) => setCoinsAwarded(parseInt(e.target.value) || 1)}
-                  data-testid="input-coins-awarded"
-                />
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="coins">Coins to Award</Label>
+                  <Input
+                    id="coins"
+                    type="number"
+                    min="1"
+                    value={coinsAwarded}
+                    onChange={(e) => setCoinsAwarded(parseInt(e.target.value) || 1)}
+                    data-testid="input-coins-awarded"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hours">Hours Completed</Label>
+                  <Input
+                    id="hours"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={newHours}
+                    onChange={(e) => setNewHours(parseFloat(e.target.value) || 0)}
+                    data-testid="input-hours-completed"
+                    placeholder="Enter hours completed"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="feedback">Admin Feedback</Label>
+                  <Textarea
+                    id="feedback"
+                    value={newFeedback}
+                    onChange={(e) => setNewFeedback(e.target.value)}
+                    placeholder="Provide feedback on the student's performance..."
+                    rows={3}
+                    data-testid="textarea-admin-feedback"
+                  />
+                </div>
+              </>
             )}
 
             <div>

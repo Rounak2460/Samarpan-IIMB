@@ -17,6 +17,7 @@ import AdminOpportunities from "@/pages/admin/opportunities";
 import OpportunityForm from "@/pages/admin/opportunity-form";
 import Applications from "@/pages/admin/applications";
 import Analytics from "@/pages/admin/analytics";
+import StudentDashboard from "@/pages/student/dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -33,6 +34,7 @@ function Router() {
         <>
           <Route path="/" component={Home} />
           <Route path="/opportunity/:id" component={OpportunityDetail} />
+          <Route path="/dashboard" component={StudentDashboard} />
           <Route path="/profile" component={Profile} />
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/admin" component={AdminDashboard} />

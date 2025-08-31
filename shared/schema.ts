@@ -101,6 +101,8 @@ export const applications = pgTable("applications", {
   completedAt: timestamp("completed_at"),
   notes: text("notes"), // Admin notes
   coinsAwarded: integer("coins_awarded").default(0),
+  hoursCompleted: integer("hours_completed").default(0),
+  adminFeedback: text("admin_feedback"), // Admin feedback on completion
 });
 
 export const badges = pgTable("badges", {

@@ -247,7 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/applications/:id/status", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
-      const { status, notes, coinsAwarded } = req.body;
+      const { status, notes, coinsAwarded, hoursCompleted, adminFeedback } = req.body;
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let application;
       
       if (status === "completed" && coinsAwarded) {
-        application = await storage.markApplicationCompleted(id, coinsAwarded);
+        application = await storage.markApplicationCompleted(id, coinsAwarded, hoursCompleted, adminFeedback);
       } else {
         application = await storage.updateApplicationStatus(id, status, notes);
       }
@@ -271,6 +271,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating application status:", error);
       res.status(500).json({ message: "Failed to update application status" });
+    }
+  });
+
+  // User stats endpoint for dashboard
+  app.get("/api/users/:userId/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const requestingUserId = req.user.id;
+      const user = await storage.getUser(requestingUserId);
+      
+      // Users can only see their own stats, admins can see any
+      if (userId !== requestingUserId && (!user || user.role !== "admin")) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const stats = await storage.getUserStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
     }
   });
 
