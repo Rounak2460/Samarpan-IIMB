@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 94.12%);
+  --foreground: hsl(0, 0%, 10.2%);
+  --card: hsl(0, 0%, 98.82%);
+  --card-foreground: hsl(0, 0%, 0%);
+  --popover: hsl(45, 25%, 97%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --primary: hsl(348, 83%, 52%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(0, 0%, 76.86%);
+  --secondary-foreground: hsl(0, 0%, 10.2%);
+  --muted: hsl(0, 0%, 89.02%);
+  --muted-foreground: hsl(0, 0%, 12.94%);
+  --accent: hsl(0, 0%, 100%);
+  --accent-foreground: hsl(0, 0%, 10.2%);
+  --destructive: hsl(0, 0%, 0%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 90.98%);
+  --input: hsl(0, 0%, 70.98%);
+  --ring: hsl(0, 0%, 41.96%);
+  --chart-1: hsl(203.89, 88.28%, 53.14%);
+  --chart-2: hsl(159.78, 100%, 36.08%);
+  --chart-3: hsl(42.03, 92.83%, 56.27%);
+  --chart-4: hsl(147.14, 78.50%, 41.96%);
+  --chart-5: hsl(341.49, 75.20%, 50.98%);
+  --sidebar: hsl(45, 25%, 97%);
+  --sidebar-foreground: hsl(20, 14%, 17%);
+  --sidebar-primary: hsl(9, 75%, 61%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(25, 45%, 80%);
+  --sidebar-accent-foreground: hsl(20, 14%, 17%);
+  --sidebar-border: hsl(45, 15%, 80%);
+  --sidebar-ring: hsl(9, 75%, 61%);
+  --font-sans: 'Poppins', sans-serif;
+  --font-serif: 'Poppins', sans-serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.8rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 1px 2px -1px hsl(9, 75%, 61% / 0.00);
+  --shadow: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 1px 2px -1px hsl(9, 75%, 61% / 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 2px 4px -1px hsl(9, 75%, 61% / 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 4px 6px -1px hsl(9, 75%, 61% / 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 8px 10px -1px hsl(9, 75%, 61% / 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
+  --spacing: 0.25rem;
+  --tracking-normal: 0em;
+}
+
+.dark {
+  --background: hsl(20, 14%, 4%);
+  --foreground: hsl(45, 25%, 91%);
+  --card: hsl(20, 14%, 8%);
+  --card-foreground: hsl(45, 25%, 85%);
+  --popover: hsl(20, 14%, 4%);
+  --popover-foreground: hsl(45, 25%, 91%);
+  --primary: hsl(9, 75%, 61%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(30, 15%, 52%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(20, 14%, 15%);
+  --muted-foreground: hsl(45, 15%, 46%);
+  --accent: hsl(25, 45%, 20%);
+  --accent-foreground: hsl(45, 25%, 85%);
+  --destructive: hsl(356.30, 90.56%, 54.31%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(20, 14%, 15%);
+  --input: hsl(20, 14%, 18%);
+  --ring: hsl(9, 75%, 61%);
+  --chart-1: hsl(203.89, 88.28%, 53.14%);
+  --chart-2: hsl(159.78, 100%, 36.08%);
+  --chart-3: hsl(42.03, 92.83%, 56.27%);
+  --chart-4: hsl(147.14, 78.50%, 41.96%);
+  --chart-5: hsl(341.49, 75.20%, 50.98%);
+  --sidebar: hsl(20, 14%, 8%);
+  --sidebar-foreground: hsl(45, 25%, 85%);
+  --sidebar-primary: hsl(9, 75%, 61%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(25, 45%, 20%);
+  --sidebar-accent-foreground: hsl(45, 25%, 85%);
+  --sidebar-border: hsl(20, 14%, 15%);
+  --sidebar-ring: hsl(9, 75%, 61%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom styles for IIMB Samarpan */
+.coin-icon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  border: 2px solid #ffa000;
+  box-shadow: 0 2px 4px rgba(255, 208, 0, 0.3);
+}
+
+.badge-bronze { 
+  background: linear-gradient(135deg, #cd7f32 0%, #deb887 100%); 
+}
+
+.badge-silver { 
+  background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%); 
+}
+
+.badge-gold { 
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); 
+}
+
+.opportunity-card {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+.opportunity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(235, 26, 78, 0.15);
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--primary) 0%, #ff4d7d 100%);
+}
+
+.leaderboard-highlight {
+  background: linear-gradient(135deg, rgba(235, 26, 78, 0.1) 0%, rgba(255, 77, 125, 0.1) 100%);
+  border: 2px solid var(--primary);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
