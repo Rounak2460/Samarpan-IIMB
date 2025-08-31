@@ -72,7 +72,7 @@ export default function AdminOpportunities() {
   });
 
   const { data: applicants, isLoading: applicantsLoading } = useQuery<ApplicationWithDetails[]>({
-    queryKey: ["/api/applications/opportunity", selectedOpportunityId],
+    queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`],
     enabled: !!selectedOpportunityId,
   });
 
@@ -159,6 +159,7 @@ export default function AdminOpportunities() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`] });
       setApplicantAction(null);
       setHoursCompleted("");
       setAdminFeedback("");
