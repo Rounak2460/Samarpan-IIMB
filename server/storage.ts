@@ -246,11 +246,11 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (type && type.length > 0) {
-      whereConditions = sql`${whereConditions} AND ${opportunities.type} = ANY(${type})`;
+      whereConditions = sql`${whereConditions} AND ${inArray(opportunities.type, type)}`;
     }
     
     if (duration && duration.length > 0) {
-      whereConditions = sql`${whereConditions} AND ${opportunities.duration} = ANY(${duration})`;
+      whereConditions = sql`${whereConditions} AND ${inArray(opportunities.duration, duration)}`;
     }
     
     if (skills && skills.length > 0) {
@@ -259,7 +259,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (status && status.length > 0) {
-      whereConditions = sql`${whereConditions} AND ${opportunities.status} = ANY(${status})`;
+      whereConditions = sql`${whereConditions} AND ${inArray(opportunities.status, status)}`;
     } else {
       // Default to only open opportunities for students
       whereConditions = sql`${whereConditions} AND ${opportunities.status} = 'open'`;
