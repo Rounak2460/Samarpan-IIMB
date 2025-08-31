@@ -73,8 +73,8 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
             <h3 className="font-semibold text-foreground text-lg line-clamp-1" data-testid="text-opportunity-title">
               {opportunity.title}
             </h3>
-            <Badge className={getStatusColor(opportunity.status)} data-testid="badge-opportunity-status">
-              {opportunity.status.charAt(0).toUpperCase() + opportunity.status.slice(1)}
+            <Badge className={getStatusColor(opportunity.status || 'open')} data-testid="badge-opportunity-status">
+              {(opportunity.status || 'open').charAt(0).toUpperCase() + (opportunity.status || 'open').slice(1)}
             </Badge>
           </div>
 
@@ -95,7 +95,7 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
               </Badge>
             )}
             <Badge variant="outline" data-testid="badge-opportunity-duration">
-              {getDurationDisplay(opportunity.duration, opportunity.customDuration)}
+              {getDurationDisplay(opportunity.duration, opportunity.customDuration || undefined)}
             </Badge>
           </div>
 

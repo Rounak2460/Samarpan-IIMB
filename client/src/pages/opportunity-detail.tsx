@@ -26,7 +26,7 @@ export default function OpportunityDetail() {
     queryKey: ["/api/opportunities", id],
   });
 
-  const { data: userApplications } = useQuery({
+  const { data: userApplications } = useQuery<any[]>({
     queryKey: ["/api/applications/user", user?.id],
     enabled: !!user?.id,
   });
@@ -103,7 +103,7 @@ export default function OpportunityDetail() {
     );
   }
 
-  const hasApplied = userApplications?.some((app: any) => app.opportunityId === id);
+  const hasApplied = Array.isArray(userApplications) && userApplications.some((app: any) => app.opportunityId === id);
   const canApply = isAuthenticated && opportunity.status === "open" && !hasApplied && user?.role !== "admin";
 
   const getStatusColor = (status: string) => {
@@ -143,8 +143,8 @@ export default function OpportunityDetail() {
                 </p>
               </div>
               <div className="flex items-center space-x-3">
-                <Badge className={getStatusColor(opportunity.status)} data-testid="badge-status">
-                  {opportunity.status.charAt(0).toUpperCase() + opportunity.status.slice(1)}
+                <Badge className={getStatusColor(opportunity.status || 'open')} data-testid="badge-status">
+                  {(opportunity.status || 'open').charAt(0).toUpperCase() + (opportunity.status || 'open').slice(1)}
                 </Badge>
                 <Button variant="outline" size="sm" data-testid="button-share">
                   <i className="fas fa-share mr-1"></i>Share
