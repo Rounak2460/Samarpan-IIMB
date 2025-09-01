@@ -27,7 +27,7 @@ export interface IStorage {
   getUserWithStats(id: string): Promise<UserWithStats | undefined>;
   updateUserCoins(userId: string, coins: number): Promise<void>;
   deleteUser(userId: string): Promise<void>;
-  getLeaderboard(limit?: number, timeframe?: string): Promise<UserWithStats[]>;
+  getLeaderboard(limit?: number, timeframe?: string, opportunityId?: string): Promise<UserWithStats[]>;
 
   // Opportunity operations
   createOpportunity(opportunity: InsertOpportunity): Promise<Opportunity>;
@@ -167,13 +167,20 @@ export class DatabaseStorage implements IStorage {
     await db.delete(users).where(eq(users.id, userId));
   }
 
-  async getLeaderboard(limit = 10, timeframe = "all"): Promise<UserWithStats[]> {
+  async getLeaderboard(limit = 10, timeframe = "all", opportunityId?: string): Promise<UserWithStats[]> {
     let dateFilter = sql`true`;
     
     if (timeframe === "month") {
       dateFilter = sql`${applications.completedAt} >= NOW() - INTERVAL '1 month'`;
     } else if (timeframe === "semester") {
       dateFilter = sql`${applications.completedAt} >= NOW() - INTERVAL '6 months'`;
+    }
+
+    let whereCondition = sql`${dateFilter} AND ${users.role} = 'student'`;
+    
+    // Add opportunity filter if specified
+    if (opportunityId) {
+      whereCondition = sql`${dateFilter} AND ${users.role} = 'student' AND ${applications.opportunityId} = ${opportunityId}`;
     }
 
     const leaderboardUsers = await db
@@ -194,7 +201,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(users)
       .leftJoin(applications, eq(users.id, applications.userId))
-      .where(sql`${dateFilter} AND ${users.role} = 'student'`)
+      .where(whereCondition)
       .groupBy(users.id)
       .orderBy(desc(users.coins), desc(sql`COUNT(CASE WHEN ${applications.status} = 'completed' THEN 1 END)`))
       .limit(limit);
@@ -881,7 +888,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
 
+    // Check if opportunity should be auto-closed due to hours limit
+    if (updated) {
+      await this.checkAndCloseOpportunityByHours(updated.opportunityId);
+    }
+
     return updated;
+  }
+
+  async checkAndCloseOpportunityByHours(opportunityId: string): Promise<void> {
+    // Get opportunity details
+    const [opportunity] = await db
+      .select()
+      .from(opportunities)
+      .where(eq(opportunities.id, opportunityId));
+
+    if (!opportunity || !opportunity.totalRequiredHours) {
+      return; // No hours limit set
+    }
+
+    // Calculate total completed hours for this opportunity
+    const [result] = await db
+      .select({
+        totalHours: sql<number>`COALESCE(SUM(${applications.hoursCompleted}), 0)`,
+      })
+      .from(applications)
+      .where(
+        and(
+          eq(applications.opportunityId, opportunityId),
+          eq(applications.status, "completed")
+        )
+      );
+
+    const totalCompletedHours = Number(result?.totalHours || 0);
+
+    // Close opportunity if hours limit reached
+    if (totalCompletedHours >= opportunity.totalRequiredHours) {
+      await db
+        .update(opportunities)
+        .set({
+          status: "filled",
+          updatedAt: new Date(),
+        })
+        .where(eq(opportunities.id, opportunityId));
+    }
   }
 
   async markApplicationCompleted(id: string, coinsAwarded: number, hours?: number, feedback?: string): Promise<Application | undefined> {
@@ -903,6 +953,9 @@ export class DatabaseStorage implements IStorage {
       
       // Check and award badges
       await this.checkAndAwardBadges(updated.userId);
+
+      // Check if opportunity should be auto-closed due to hours limit
+      await this.checkAndCloseOpportunityByHours(updated.opportunityId);
     }
 
     return updated;

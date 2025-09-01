@@ -8,15 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { UserWithStats } from "@shared/schema";
+import type { UserWithStats, OpportunityWithCreator } from "@shared/schema";
 
 export default function Leaderboard() {
   const { user } = useAuth();
   const [timeframe, setTimeframe] = useState("all");
+  const [selectedActivity, setSelectedActivity] = useState("all");
   const [showAnonymized, setShowAnonymized] = useState(false);
 
+  const { data: opportunities } = useQuery<{ opportunities: OpportunityWithCreator[] }>({
+    queryKey: ["/api/opportunities"],
+  });
+
   const { data: leaderboard, isLoading } = useQuery<UserWithStats[]>({
-    queryKey: ["/api/leaderboard", { timeframe, limit: 50 }],
+    queryKey: ["/api/leaderboard", { timeframe, opportunityId: selectedActivity !== "all" ? selectedActivity : undefined, limit: 50 }],
   });
 
   const currentUserRank = leaderboard?.findIndex(u => u.id === user?.id) + 1 || 0;
@@ -66,7 +71,7 @@ export default function Leaderboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-6">
                   <div>
                     <label className="text-sm font-medium text-foreground mr-2">Timeframe:</label>
                     <Select value={timeframe} onValueChange={setTimeframe}>
@@ -77,6 +82,23 @@ export default function Leaderboard() {
                         <SelectItem value="all">All Time</SelectItem>
                         <SelectItem value="semester">This Semester</SelectItem>
                         <SelectItem value="month">This Month</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-foreground mr-2">Activity:</label>
+                    <Select value={selectedActivity} onValueChange={setSelectedActivity}>
+                      <SelectTrigger className="w-64" data-testid="select-activity">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Activities</SelectItem>
+                        {opportunities?.opportunities.map((opportunity) => (
+                          <SelectItem key={opportunity.id} value={opportunity.id}>
+                            {opportunity.title}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

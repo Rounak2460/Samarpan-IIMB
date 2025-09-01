@@ -339,8 +339,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Leaderboard routes
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      const { limit = "10", timeframe = "all" } = req.query;
-      const leaderboard = await storage.getLeaderboard(parseInt(limit as string), timeframe as string);
+      const { limit = "10", timeframe = "all", opportunityId } = req.query;
+      const leaderboard = await storage.getLeaderboard(
+        parseInt(limit as string), 
+        timeframe as string,
+        opportunityId as string | undefined
+      );
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
