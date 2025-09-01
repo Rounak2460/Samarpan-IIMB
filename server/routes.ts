@@ -475,24 +475,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test auto-close functionality (admin only)
-  app.post("/api/opportunities/:id/test-autoclose", isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== "admin") {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      await storage.checkAndCloseOpportunityByHours(id);
-      res.json({ message: "Auto-close check completed. Check console logs for details." });
-    } catch (error) {
-      console.error("Error testing auto-close:", error);
-      res.status(500).json({ message: "Failed to test auto-close" });
-    }
-  });
 
   // Admin close opportunity
   app.patch("/api/opportunities/:id/close", isAuthenticated, async (req: any, res) => {

@@ -21,7 +21,7 @@ export default function AdminOpportunities() {
   const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("open");
   const [expandedOpportunity, setExpandedOpportunity] = useState<string | null>(null);
 
   const { data: opportunities, isLoading } = useQuery<OpportunityWithCreator[]>({
@@ -246,8 +246,8 @@ export default function AdminOpportunities() {
                       <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="closed">Closed</SelectItem>
                       <SelectItem value="filled">Filled</SelectItem>
                     </SelectContent>

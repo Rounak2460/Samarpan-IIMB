@@ -163,7 +163,8 @@ export default function AdminDashboard() {
                             <h4 className="font-medium text-foreground mb-1">{opportunity.title}</h4>
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                               <span>{opportunity.totalApplications} applications</span>
-                              <span>{opportunity.completedApplications} completed</span>
+                              <span>{opportunity.submittedApplications || 0} submitted</span>
+                              <span>{opportunity.completedApplications} approved</span>
                               <Badge className={opportunity.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                                 {opportunity.status}
                               </Badge>

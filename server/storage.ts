@@ -84,6 +84,7 @@ export interface IStorage {
     completedHours: number;
     totalApplications: number;
     completedApplications: number;
+    submittedApplications: number;
     status: string;
   }>>;
 }
@@ -1231,6 +1232,7 @@ export class DatabaseStorage implements IStorage {
     completedHours: number;
     totalApplications: number;
     completedApplications: number;
+    submittedApplications: number;
     status: string;
   }>> {
     const progressData = await db
@@ -1241,10 +1243,12 @@ export class DatabaseStorage implements IStorage {
         status: opportunities.status,
         totalApplications: sql<number>`COUNT(${applications.id})`,
         completedApplications: sql<number>`COUNT(CASE WHEN ${applications.status} IN ('hours_approved', 'completed') THEN 1 END)`,
+        submittedApplications: sql<number>`COUNT(CASE WHEN ${applications.status} = 'hours_submitted' THEN 1 END)`,
         completedHours: sql<number>`COALESCE(SUM(CASE WHEN ${applications.status} IN ('hours_approved', 'completed') THEN ${applications.hoursCompleted} ELSE 0 END), 0)`,
       })
       .from(opportunities)
       .leftJoin(applications, eq(opportunities.id, applications.opportunityId))
+      .where(eq(opportunities.status, 'open')) // Only show open opportunities
       .groupBy(opportunities.id, opportunities.title, opportunities.totalRequiredHours, opportunities.status)
       .orderBy(desc(opportunities.createdAt));
 
