@@ -62,7 +62,10 @@ export default function StudentDashboard() {
 
   const submitHoursMutation = useMutation({
     mutationFn: async ({ applicationId, hours }: { applicationId: string; hours: number }) => {
-      await apiRequest("POST", `/api/applications/${applicationId}/submit-hours`, { hours });
+      await apiRequest(`/api/applications/${applicationId}/submit-hours`, {
+        method: "PATCH",
+        body: { hours },
+      });
     },
     onSuccess: () => {
       toast({
