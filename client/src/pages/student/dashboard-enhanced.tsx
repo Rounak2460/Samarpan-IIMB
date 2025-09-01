@@ -40,6 +40,7 @@ export default function StudentDashboard() {
   }>({
     queryKey: ["/api/opportunities"],
     enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds to catch auto-closed opportunities
   });
 
   const { data: applications, isLoading: applicationsLoading } = useQuery<ApplicationWithDetails[]>({
@@ -109,6 +110,7 @@ export default function StudentDashboard() {
   }
 
   const opportunities = opportunitiesData?.opportunities || [];
+  // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   const appliedOpportunityIds = new Set((applications || []).map(app => app.opportunityId));
   const availableOpportunities = activeOpportunities.filter(opp => !appliedOpportunityIds.has(opp.id));

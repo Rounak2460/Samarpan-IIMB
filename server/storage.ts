@@ -304,7 +304,7 @@ export class DatabaseStorage implements IStorage {
     if (status && status.length > 0) {
       whereConditions = sql`${whereConditions} AND ${inArray(opportunities.status, status)}`;
     } else {
-      // Default to only open opportunities for students
+      // Default to only open opportunities for students (exclude closed and filled)
       whereConditions = sql`${whereConditions} AND ${opportunities.status} = 'open'`;
     }
 

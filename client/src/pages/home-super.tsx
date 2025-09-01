@@ -20,6 +20,7 @@ export default function SuperHome() {
   }>({
     queryKey: ["/api/opportunities"],
     enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds to catch auto-closed opportunities
   });
 
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<any[]>({
@@ -49,6 +50,7 @@ export default function SuperHome() {
   }
 
   const opportunities = opportunitiesData?.opportunities || [];
+  // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   const topStudents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
   const recentApplications = Array.isArray(userApplications) ? userApplications.slice(0, 3) : [];

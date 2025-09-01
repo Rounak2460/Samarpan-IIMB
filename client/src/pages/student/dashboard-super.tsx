@@ -40,6 +40,7 @@ export default function SuperStudentDashboard() {
     opportunities: Opportunity[];
   }>({
     queryKey: ["/api/opportunities"],
+    refetchInterval: 30000, // Refresh every 30 seconds to catch auto-closed opportunities
     enabled: !!user,
   });
 
@@ -122,6 +123,7 @@ export default function SuperStudentDashboard() {
   }
 
   const opportunities = opportunitiesData?.opportunities || [];
+  // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   const appliedOpportunityIds = new Set((applications || []).map(app => app.opportunityId));
   const availableOpportunities = activeOpportunities.filter(opp => !appliedOpportunityIds.has(opp.id));
