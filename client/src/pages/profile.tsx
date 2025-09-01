@@ -72,7 +72,11 @@ export default function Profile() {
   }
 
   const userRank = leaderboard ? leaderboard.findIndex((u: any) => u.id === user.id) + 1 : 0;
-  const completedApplications = applications?.filter(app => app.status === "completed") || [];
+  // Filter applications to only show those for open opportunities
+  const activeApplications = applications?.filter(app => 
+    app.opportunity && app.opportunity.status === "open"
+  ) || [];
+  const completedApplications = activeApplications.filter(app => app.status === "completed");
   const totalCoinsEarned = completedApplications.reduce((sum, app) => sum + (app.coinsAwarded || 0), 0);
 
   // Calculate progress to next badge

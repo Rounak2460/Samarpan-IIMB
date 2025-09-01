@@ -55,14 +55,18 @@ export default function SuperHome() {
   // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   const topStudents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
-  const recentApplications = Array.isArray(userApplications) ? userApplications.slice(0, 3) : [];
+  // Filter applications to only show those for open opportunities
+  const activeApplications = Array.isArray(userApplications) ? userApplications.filter(app => 
+    app.opportunity && app.opportunity.status === "open"
+  ) : [];
+  const recentApplications = activeApplications.slice(0, 3);
 
   // User ranking and progress
   const userRank = (leaderboard || []).findIndex((u: any) => u.id === user.id) + 1;
   const totalCoins = user.coins || 0;
-  const completedApplications = Array.isArray(userApplications) ? userApplications.filter((app: any) => 
+  const completedApplications = activeApplications.filter((app: any) => 
     app.status === "completed" || app.status === "hours_approved"
-  ).length : 0;
+  ).length;
 
   // Motivational messages based on progress
   const getMotivationalMessage = () => {

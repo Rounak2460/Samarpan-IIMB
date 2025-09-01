@@ -114,7 +114,13 @@ export default function StudentDashboard() {
   const opportunities = opportunitiesData?.opportunities || [];
   // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
-  const appliedOpportunityIds = new Set((applications || []).map(app => app.opportunityId));
+  
+  // Filter applications to only show those for open opportunities
+  const activeApplications = (applications || []).filter(app => 
+    app.opportunity && app.opportunity.status === "open"
+  );
+  
+  const appliedOpportunityIds = new Set(activeApplications.map(app => app.opportunityId));
   const availableOpportunities = activeOpportunities.filter(opp => !appliedOpportunityIds.has(opp.id));
 
   // Filter opportunities
@@ -202,7 +208,7 @@ export default function StudentDashboard() {
                     <Skeleton key={i} className="h-24 w-full" />
                   ))}
                 </div>
-              ) : !applications || applications.length === 0 ? (
+              ) : !activeApplications || activeApplications.length === 0 ? (
                 <div className="text-center py-12">
                   <i className="fas fa-search text-blue-500 text-4xl mb-4"></i>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No applications yet!</h3>
@@ -210,7 +216,7 @@ export default function StudentDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {applications.map((application) => (
+                  {activeApplications.map((application) => (
                     <div key={application.id} className="bg-white border-2 rounded-lg p-6 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">

@@ -53,7 +53,11 @@ export default function Home() {
   // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   const topStudents = (leaderboard || []).slice(0, 5);
-  const recentApplications = (userApplications || []).slice(0, 3);
+  // Filter applications to only show those for open opportunities
+  const activeApplications = (userApplications || []).filter((app: any) => 
+    app.opportunity && app.opportunity.status === "open"
+  );
+  const recentApplications = activeApplications.slice(0, 3);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {

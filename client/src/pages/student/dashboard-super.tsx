@@ -130,15 +130,20 @@ export default function SuperStudentDashboard() {
   const appliedOpportunityIds = new Set((applications || []).map(app => app.opportunityId));
   const availableOpportunities = activeOpportunities.filter(opp => !appliedOpportunityIds.has(opp.id));
 
-  // Calculate user stats and progress
+  // Filter applications to only show those for open opportunities
+  const activeApplications = (applications || []).filter(app => 
+    app.opportunity && app.opportunity.status === "open"
+  );
+
+  // Calculate user stats and progress using filtered applications
   const totalCoins = user.coins || 0;
-  const completedApplications = (applications || []).filter(app => 
+  const completedApplications = activeApplications.filter(app => 
     app.status === "completed" || app.status === "hours_approved"
   ).length;
-  const activeApplications = (applications || []).filter(app => 
+  const ongoingApplications = activeApplications.filter(app => 
     app.status === "accepted" || app.status === "hours_submitted" || app.status === "pending"
   ).length;
-  const totalHoursCompleted = (applications || []).reduce((total, app) => 
+  const totalHoursCompleted = activeApplications.reduce((total, app) => 
     total + (app.hoursCompleted || 0), 0
   );
 
@@ -329,7 +334,7 @@ export default function SuperStudentDashboard() {
             <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white">
               <CardTitle className="flex items-center text-2xl">
                 <i className="fas fa-rocket mr-3"></i>
-                🚀 My Impact Journey ({(applications || []).length})
+                🚀 My Impact Journey ({activeApplications.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -339,7 +344,7 @@ export default function SuperStudentDashboard() {
                     <Skeleton key={i} className="h-28 w-full rounded-lg" />
                   ))}
                 </div>
-              ) : !applications || applications.length === 0 ? (
+              ) : !activeApplications || activeApplications.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="text-8xl mb-6">🌟</div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">Ready to Start Your Journey?</h3>
@@ -356,7 +361,7 @@ export default function SuperStudentDashboard() {
                 </div>
               ) : (
                 <div className="space-y-0">
-                  {applications.map((application, index) => (
+                  {activeApplications.map((application, index) => (
                     <div 
                       key={application.id} 
                       className={`p-6 hover:bg-gray-50 transition-colors border-b last:border-b-0 ${
