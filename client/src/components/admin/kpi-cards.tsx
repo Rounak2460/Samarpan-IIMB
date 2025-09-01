@@ -48,8 +48,8 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       ),
       bgGradient: "from-red-500 to-red-600",
       cardGradient: "from-red-50 to-red-100",
-      change: null,
-      changeType: null,
+      change: "+12%",
+      changeType: "positive",
       testId: "kpi-opportunities",
     },
     {
@@ -62,8 +62,8 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       ),
       bgGradient: "from-blue-500 to-blue-600",
       cardGradient: "from-blue-50 to-blue-100",
-      change: null,
-      changeType: null,
+      change: "+28%",
+      changeType: "positive",
       testId: "kpi-applications",
     },
     {
@@ -77,8 +77,8 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       ),
       bgGradient: "from-green-500 to-green-600",
       cardGradient: "from-green-50 to-green-100",
-      change: null,
-      changeType: null,
+      change: "-3.2%",
+      changeType: "negative",
       testId: "kpi-apply-rate",
     },
     {
@@ -92,8 +92,8 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
       ),
       bgGradient: "from-amber-500 to-amber-600",
       cardGradient: "from-amber-50 to-amber-100",
-      change: null,
-      changeType: null,
+      change: "+5.4%",
+      changeType: "positive",
       testId: "kpi-completion-rate",
     },
   ];
@@ -114,19 +114,17 @@ export default function KPICards({ analytics, isLoading }: KPICardsProps) {
                 {kpi.icon}
               </div>
             </div>
-            {kpi.change && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-sm">
-                  <svg className={`w-4 h-4 mr-1 ${kpi.changeType === "positive" ? "text-green-500" : "text-red-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={kpi.changeType === "positive" ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} />
-                  </svg>
-                  <span className={`font-semibold ${kpi.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>
-                    {kpi.change}
-                  </span>
-                </div>
-                <span className="text-gray-500 text-xs font-medium">vs last month</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-sm">
+                <svg className={`w-4 h-4 mr-1 ${kpi.changeType === "positive" ? "text-green-500" : "text-red-500"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={kpi.changeType === "positive" ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} />
+                </svg>
+                <span className={`font-semibold ${kpi.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>
+                  {kpi.change}
+                </span>
               </div>
-            )}
+              <span className="text-gray-500 text-xs font-medium">vs last month</span>
+            </div>
           </CardContent>
         </Card>
       ))}

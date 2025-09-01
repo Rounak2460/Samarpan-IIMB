@@ -13,6 +13,7 @@ import OpportunityDetail from "@/pages/opportunity-detail";
 import Profile from "@/pages/profile";
 import Leaderboard from "@/pages/leaderboard";
 import AdminDashboard from "@/pages/admin/dashboard-new";
+import AdminOpportunities from "@/pages/admin/opportunities-enhanced";
 import OpportunityForm from "@/pages/admin/opportunity-form";
 import Applications from "@/pages/admin/applications";
 import Analytics from "@/pages/admin/analytics";
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/opportunities" component={AdminOpportunities} />
           <Route path="/admin/opportunities/new" component={OpportunityForm} />
           <Route path="/admin/opportunities/:id/edit" component={OpportunityForm} />
           <Route path="/admin/applications/:opportunityId" component={Applications} />
