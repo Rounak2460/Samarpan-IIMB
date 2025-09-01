@@ -16,7 +16,7 @@ import {
   type UserWithStats,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, count, sql, and, ilike, inArray } from "drizzle-orm";
+import { eq, desc, asc, count, sql, and, ilike, inArray, or } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -958,7 +958,6 @@ export class DatabaseStorage implements IStorage {
           coinsAwarded,
           adminFeedback: feedback,
           completedAt: new Date(),
-          updatedAt: new Date(),
           submittedHours: 0, // Reset submitted hours after approval
         })
         .where(eq(applications.id, id))
@@ -995,8 +994,7 @@ export class DatabaseStorage implements IStorage {
           status: "accepted", // Back to accepted so student can resubmit
           adminFeedback: feedback,
           submittedHours: 0, // Reset submitted hours
-          hourSubmissionDate: null,
-          updatedAt: new Date()
+          hourSubmissionDate: null
         })
         .where(eq(applications.id, id))
         .returning();
