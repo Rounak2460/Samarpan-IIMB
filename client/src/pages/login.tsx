@@ -114,7 +114,7 @@ export default function Login() {
                   data-testid="input-password"
                 />
                 <p className="text-xs text-gray-500">
-                  Use password format: YourFirstName@2024
+                  Login with email and your password is first name@2024 with first letter as capital
                 </p>
               </div>
 
@@ -144,16 +144,6 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Example Password Format */}
-            <div className="mt-8 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
-              <h4 className="font-semibold text-amber-900 mb-2 text-sm">Password Format Examples</h4>
-              <div className="text-xs text-amber-800 space-y-1">
-                <p><strong>Admin:</strong> admin@iimb.ac.in → AdminIIMB@2024</p>
-                <p><strong>Student (John):</strong> john.doe@iimb.ac.in → John@2024</p>
-                <p><strong>Student (Priya):</strong> priya.sharma@iimb.ac.in → Priya@2024</p>
-                <p className="text-amber-700 font-medium">Contact admin for your actual password</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
