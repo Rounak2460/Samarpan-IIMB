@@ -42,6 +42,10 @@ export default function Applications() {
   const [newFeedback, setNewFeedback] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [coinsAwarded, setCoinsAwarded] = useState(1);
+  const [approveHoursDialogOpen, setApproveHoursDialogOpen] = useState(false);
+  const [rejectHoursDialogOpen, setRejectHoursDialogOpen] = useState(false);
+  const [approvalCoins, setApprovalCoins] = useState(1);
+  const [rejectionFeedback, setRejectionFeedback] = useState("");
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "admin")) {
@@ -112,6 +116,100 @@ export default function Applications() {
       });
     },
   });
+
+  // Approve hours mutation
+  const approveHoursMutation = useMutation({
+    mutationFn: async ({ applicationId, coinsAwarded, feedback }: {
+      applicationId: string;
+      coinsAwarded: number;
+      feedback?: string;
+    }) => {
+      await apiRequest(`/api/applications/${applicationId}/approve-hours`, {
+        method: "POST",
+        body: { coinsAwarded, feedback },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/applications/opportunity", opportunityId] });
+      setApproveHoursDialogOpen(false);
+      setApprovalCoins(1);
+      setSelectedApplication(null);
+      toast({
+        title: "Success",
+        description: "Hours approved successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to approve hours",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reject hours mutation
+  const rejectHoursMutation = useMutation({
+    mutationFn: async ({ applicationId, feedback }: {
+      applicationId: string;
+      feedback: string;
+    }) => {
+      await apiRequest(`/api/applications/${applicationId}/reject-hours`, {
+        method: "POST",
+        body: { feedback },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/applications/opportunity", opportunityId] });
+      setRejectHoursDialogOpen(false);
+      setRejectionFeedback("");
+      setSelectedApplication(null);
+      toast({
+        title: "Success",
+        description: "Hours rejected successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to reject hours",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleApproveHours = (application: ApplicationWithDetails) => {
+    setSelectedApplication(application);
+    setApprovalCoins(application.submittedHours * 10); // Default: 10 coins per hour
+    setApproveHoursDialogOpen(true);
+  };
+
+  const handleRejectHours = (application: ApplicationWithDetails) => {
+    setSelectedApplication(application);
+    setRejectHoursDialogOpen(true);
+  };
 
   if (authLoading || opportunityLoading) {
     return (
@@ -392,15 +490,41 @@ export default function Applications() {
                           </td>
                           <td className="py-4">
                             <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUpdateStatus(application)}
-                                data-testid={`button-update-status-${application.id}`}
-                              >
-                                <i className="fas fa-edit mr-1"></i>
-                                Update
-                              </Button>
+                              {application.status === "hours_submitted" ? (
+                                <>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleApproveHours(application)}
+                                    data-testid={`button-approve-hours-${application.id}`}
+                                  >
+                                    <i className="fas fa-check mr-1"></i>
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleRejectHours(application)}
+                                    data-testid={`button-reject-hours-${application.id}`}
+                                  >
+                                    <i className="fas fa-times mr-1"></i>
+                                    Reject
+                                  </Button>
+                                  <div className="text-sm text-muted-foreground">
+                                    {application.submittedHours} hrs submitted
+                                  </div>
+                                </>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleUpdateStatus(application)}
+                                  data-testid={`button-update-status-${application.id}`}
+                                >
+                                  <i className="fas fa-edit mr-1"></i>
+                                  Update
+                                </Button>
+                              )}
                               {application.user?.email && (
                                 <Button
                                   variant="ghost"
@@ -525,6 +649,115 @@ export default function Applications() {
               ) : (
                 "Update Status"
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve Hours Dialog */}
+      <Dialog open={approveHoursDialogOpen} onOpenChange={setApproveHoursDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Hours</DialogTitle>
+            <DialogDescription>
+              Approve the submitted hours for {selectedApplication?.user?.firstName} {selectedApplication?.user?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
+                Submitted Hours: {selectedApplication?.submittedHours}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="approval-coins">Coins to Award</Label>
+              <Input
+                id="approval-coins"
+                type="number"
+                min="1"
+                value={approvalCoins}
+                onChange={(e) => setApprovalCoins(parseInt(e.target.value) || 1)}
+                data-testid="input-approval-coins"
+              />
+            </div>
+            <div>
+              <Label htmlFor="approval-feedback">Feedback (Optional)</Label>
+              <Textarea
+                id="approval-feedback"
+                value={newFeedback}
+                onChange={(e) => setNewFeedback(e.target.value)}
+                placeholder="Provide feedback for the student..."
+                data-testid="textarea-approval-feedback"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApproveHoursDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedApplication) {
+                  approveHoursMutation.mutate({
+                    applicationId: selectedApplication.id,
+                    coinsAwarded: approvalCoins,
+                    feedback: newFeedback,
+                  });
+                }
+              }}
+              disabled={!approvalCoins || approvalCoins <= 0}
+              data-testid="button-confirm-approve"
+            >
+              Approve Hours
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Hours Dialog */}
+      <Dialog open={rejectHoursDialogOpen} onOpenChange={setRejectHoursDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Hours</DialogTitle>
+            <DialogDescription>
+              Reject the submitted hours for {selectedApplication?.user?.firstName} {selectedApplication?.user?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
+                Submitted Hours: {selectedApplication?.submittedHours}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="rejection-feedback">Feedback (Required)</Label>
+              <Textarea
+                id="rejection-feedback"
+                value={rejectionFeedback}
+                onChange={(e) => setRejectionFeedback(e.target.value)}
+                placeholder="Please provide specific feedback on why the hours are being rejected..."
+                data-testid="textarea-rejection-feedback"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectHoursDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (selectedApplication) {
+                  rejectHoursMutation.mutate({
+                    applicationId: selectedApplication.id,
+                    feedback: rejectionFeedback,
+                  });
+                }
+              }}
+              disabled={!rejectionFeedback.trim()}
+              data-testid="button-confirm-reject"
+            >
+              Reject Hours
             </Button>
           </DialogFooter>
         </DialogContent>

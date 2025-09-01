@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Can only submit hours for accepted applications" });
       }
 
-      const updatedApplication = await storage.submitApplicationHours(id, hours);
+      const updatedApplication = await storage.submitStudentHours(id, hours);
       res.json(updatedApplication);
     } catch (error) {
       console.error("Error submitting hours:", error);

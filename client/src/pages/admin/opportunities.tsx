@@ -57,6 +57,7 @@ export default function AdminOpportunities() {
     mutationFn: async (opportunityId: string) => {
       return await apiRequest(`/api/opportunities/${opportunityId}/close`, {
         method: "PATCH",
+        body: {},
       });
     },
     onSuccess: () => {
@@ -91,6 +92,7 @@ export default function AdminOpportunities() {
     mutationFn: async (opportunityId: string) => {
       return await apiRequest(`/api/opportunities/${opportunityId}`, {
         method: "DELETE",
+        body: {},
       });
     },
     onSuccess: () => {
@@ -480,13 +482,13 @@ export default function AdminOpportunities() {
                               <div className="max-w-xs">
                                 <p className="font-medium text-foreground truncate">{opportunity.title}</p>
                                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                  {opportunity.description}
+                                  {(opportunity as any).description || "No description available"}
                                 </p>
                               </div>
                             </td>
                             <td className="py-4">
-                              <Badge className={getStatusColor(opportunity.status)}>
-                                {opportunity.status}
+                              <Badge className={getStatusColor(opportunity.status || 'open')}>
+                                {opportunity.status || 'open'}
                               </Badge>
                             </td>
                             <td className="py-4">
@@ -507,7 +509,7 @@ export default function AdminOpportunities() {
                             </td>
                             <td className="py-4">
                               <span className="text-sm text-muted-foreground">
-                                {format(new Date(opportunity.createdAt), "MMM dd, yyyy")}
+                                {opportunity.createdAt ? format(new Date(opportunity.createdAt), "MMM dd, yyyy") : "Unknown"}
                               </span>
                             </td>
                             <td className="py-4">
@@ -654,7 +656,7 @@ export default function AdminOpportunities() {
                           {application.user?.firstName} {application.user?.lastName}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Applied {format(new Date(application.appliedAt), "MMM dd, yyyy")}
+                          Applied {application.appliedAt ? format(new Date(application.appliedAt), "MMM dd, yyyy") : "Unknown"}
                         </p>
                         {application.status === "hours_submitted" && (
                           <p className="text-sm text-purple-600 font-medium">
@@ -669,8 +671,8 @@ export default function AdminOpportunities() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <Badge className={getApplicationStatusColor(application.status)}>
-                        {application.status.replace('_', ' ')}
+                      <Badge className={getApplicationStatusColor(application.status || 'pending')}>
+                        {(application.status || 'pending').replace('_', ' ')}
                       </Badge>
                       {application.status === "hours_submitted" && (
                         <div className="flex space-x-2">
