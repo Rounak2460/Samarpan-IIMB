@@ -83,7 +83,7 @@ export default function OpportunityForm() {
       capacity: undefined,
       totalRequiredHours: undefined,
       status: "open",
-      coinsPerHour: 10,
+      coinsPerHour: 1,
       maxCoins: 100,
       visibility: "public",
       contactEmail: "",
@@ -515,8 +515,8 @@ export default function OpportunityForm() {
                                   placeholder="Coins earned per hour"
                                   data-testid="input-coins-per-hour"
                                   {...field}
-                                  value={field.value ?? 10}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 10)}
+                                  value={field.value ?? 1}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -688,7 +688,7 @@ export default function OpportunityForm() {
                         <div className="flex items-center space-x-1 text-primary">
                           <div className="coin-icon" style={{ width: "16px", height: "16px", fontSize: "10px" }}>₹</div>
                           <span className="text-sm font-medium">
-                            {form.watch("coinsPerHour") || 10}/hr (max {form.watch("maxCoins") || 100})
+                            {form.watch("coinsPerHour") || 1}/hr (max {form.watch("maxCoins") || 100})
                           </span>
                         </div>
                       </div>
