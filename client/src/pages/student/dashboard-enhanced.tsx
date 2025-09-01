@@ -40,7 +40,9 @@ export default function StudentDashboard() {
   }>({
     queryKey: ["/api/opportunities"],
     enabled: !!user,
-    refetchInterval: 30000, // Refresh every 30 seconds to catch auto-closed opportunities
+    refetchInterval: 10000, // Refresh every 10 seconds to catch auto-closed opportunities
+    staleTime: 0, // Always consider data stale to force fresh fetches
+    cacheTime: 0, // Don't cache results
   });
 
   const { data: applications, isLoading: applicationsLoading } = useQuery<ApplicationWithDetails[]>({
