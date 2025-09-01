@@ -296,7 +296,7 @@ export default function SuperStudentDashboard() {
                 </div>
                 <div className="text-center p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl border border-blue-300">
                   <div className="text-3xl mb-2">⚡</div>
-                  <div className="text-2xl font-bold text-blue-800">{activeApplications}</div>
+                  <div className="text-2xl font-bold text-blue-800">{activeApplications.length}</div>
                   <div className="text-sm text-blue-600">Active</div>
                 </div>
                 <div className="text-center p-4 bg-gradient-to-br from-green-100 to-green-200 rounded-xl border border-green-300">
@@ -378,8 +378,8 @@ export default function SuperStudentDashboard() {
                               <h4 className="font-bold text-xl text-gray-900 mb-1">{application.opportunity?.title}</h4>
                               <p className="text-gray-600 text-sm">{application.opportunity?.shortDescription}</p>
                             </div>
-                            <Badge className={`${getStatusColor(application.status)} border-2 px-4 py-2 text-sm font-medium`}>
-                              {getStatusIcon(application.status)} {application.status === "hours_approved" ? "Can Continue" : (application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1).replace('_', ' ')}
+                            <Badge className={`${getStatusColor(application.status || 'pending')} border-2 px-4 py-2 text-sm font-medium`}>
+                              {getStatusIcon(application.status || 'pending')} {application.status === "hours_approved" ? "Can Continue" : (application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1).replace('_', ' ')}
                             </Badge>
                           </div>
                           
@@ -534,7 +534,7 @@ export default function SuperStudentDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredOpportunities.map((opportunity, index) => (
+                  {filteredOpportunities.map((opportunity: any, index: any) => (
                     <div 
                       key={opportunity.id} 
                       className="group bg-white rounded-2xl overflow-hidden shadow-lg border-2 border-gray-100 hover:shadow-2xl hover:border-blue-300 transform hover:-translate-y-2 transition-all duration-300"
