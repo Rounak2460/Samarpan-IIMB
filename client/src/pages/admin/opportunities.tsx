@@ -55,10 +55,7 @@ export default function AdminOpportunities() {
   // Close opportunity mutation
   const closeOpportunityMutation = useMutation({
     mutationFn: async (opportunityId: string) => {
-      return await apiRequest(`/api/opportunities/${opportunityId}/close`, {
-        method: "PATCH",
-        body: {},
-      });
+      return await apiRequest("PATCH", `/api/opportunities/${opportunityId}/close`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
@@ -90,10 +87,7 @@ export default function AdminOpportunities() {
   // Delete opportunity mutation
   const deleteOpportunityMutation = useMutation({
     mutationFn: async (opportunityId: string) => {
-      return await apiRequest(`/api/opportunities/${opportunityId}`, {
-        method: "DELETE",
-        body: {},
-      });
+      return await apiRequest("DELETE", `/api/opportunities/${opportunityId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
@@ -129,9 +123,9 @@ export default function AdminOpportunities() {
       coinsAwarded: number;
       feedback?: string;
     }) => {
-      return await apiRequest(`/api/applications/${applicationId}/approve-hours`, {
-        method: "POST",
-        body: { coinsAwarded, feedback },
+      return await apiRequest("POST", `/api/applications/${applicationId}/approve-hours`, {
+        coinsAwarded,
+        feedback,
       });
     },
     onSuccess: () => {
@@ -170,9 +164,8 @@ export default function AdminOpportunities() {
       applicationId: string;
       feedback: string;
     }) => {
-      return await apiRequest(`/api/applications/${applicationId}/reject-hours`, {
-        method: "POST",
-        body: { feedback },
+      return await apiRequest("POST", `/api/applications/${applicationId}/reject-hours`, {
+        feedback,
       });
     },
     onSuccess: () => {
@@ -263,7 +256,7 @@ export default function AdminOpportunities() {
   // Filter opportunities
   const filteredOpportunities = (opportunities || []).filter((opportunity) => {
     const matchesSearch = opportunity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      opportunity.description.toLowerCase().includes(searchQuery.toLowerCase());
+      ((opportunity as any).description || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || opportunity.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
