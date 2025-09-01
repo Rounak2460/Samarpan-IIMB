@@ -336,6 +336,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate password for user (admin only)
+  app.post("/api/users/:userId/generate-password", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const requestingUserId = req.user.id;
+      const requestingUser = await storage.getUser(requestingUserId);
+      
+      if (!requestingUser || requestingUser.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const targetUser = await storage.getUser(userId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const generatedPassword = storage.generateUserPassword(targetUser.email, targetUser.firstName);
+      res.json({ 
+        password: generatedPassword,
+        user: `${targetUser.firstName} ${targetUser.lastName}`,
+        email: targetUser.email
+      });
+    } catch (error) {
+      console.error("Error generating password:", error);
+      res.status(500).json({ message: "Failed to generate password" });
+    }
+  });
+
   // Leaderboard routes
   app.get("/api/leaderboard", async (req, res) => {
     try {

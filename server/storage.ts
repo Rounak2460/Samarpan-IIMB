@@ -96,14 +96,38 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  generateUserPassword(email: string, firstName?: string): string {
+    // Admin gets custom password
+    if (email === "admin@iimb.ac.in") {
+      return "AdminIIMB@2024";
+    }
+    
+    // Students get FirstName@2024 format
+    if (firstName) {
+      return `${firstName}@2024`;
+    }
+    
+    // Fallback if no firstName provided
+    return "Student@2024";
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // Determine user role based on email
+    const isAdmin = userData.email === "admin@iimb.ac.in";
+    const userRole = isAdmin ? "admin" : "student";
+
+    const finalUserData = {
+      ...userData,
+      role: userRole,
+    };
+
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values(finalUserData)
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          ...userData,
+          ...finalUserData,
           updatedAt: new Date(),
         },
       })
