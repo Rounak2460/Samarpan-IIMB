@@ -1219,6 +1219,77 @@ export class DatabaseStorage implements IStorage {
 
     return progressData;
   }
+
+  async getAllApplicationsWithDetails(): Promise<ApplicationWithDetails[]> {
+    const allApplications = await db
+      .select({
+        id: applications.id,
+        userId: applications.userId,
+        opportunityId: applications.opportunityId,
+        status: applications.status,
+        appliedAt: applications.appliedAt,
+        completedAt: applications.completedAt,
+        notes: applications.notes,
+        coinsAwarded: applications.coinsAwarded,
+        hoursCompleted: applications.hoursCompleted,
+        submittedHours: applications.submittedHours,
+        hourSubmissionDate: applications.hourSubmissionDate,
+        adminFeedback: applications.adminFeedback,
+        userEmail: users.email,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userProfileImageUrl: users.profileImageUrl,
+        userRole: users.role,
+        userProgram: users.program,
+        userCoins: users.coins,
+        userAnonymizeLeaderboard: users.anonymizeLeaderboard,
+        userCreatedAt: users.createdAt,
+        userUpdatedAt: users.updatedAt,
+        opportunityTitle: opportunities.title,
+        opportunityShortDescription: opportunities.shortDescription,
+        opportunityCoinsPerHour: opportunities.coinsPerHour,
+        opportunityMaxCoins: opportunities.maxCoins,
+      })
+      .from(applications)
+      .leftJoin(users, eq(applications.userId, users.id))
+      .leftJoin(opportunities, eq(applications.opportunityId, opportunities.id))
+      .orderBy(desc(applications.appliedAt));
+
+    return allApplications.map((app) => ({
+      id: app.id,
+      userId: app.userId,
+      opportunityId: app.opportunityId,
+      status: app.status,
+      appliedAt: app.appliedAt,
+      completedAt: app.completedAt,
+      notes: app.notes,
+      coinsAwarded: app.coinsAwarded,
+      hoursCompleted: app.hoursCompleted,
+      submittedHours: app.submittedHours,
+      hourSubmissionDate: app.hourSubmissionDate,
+      adminFeedback: app.adminFeedback,
+      user: {
+        id: app.userId,
+        email: app.userEmail,
+        firstName: app.userFirstName,
+        lastName: app.userLastName,
+        profileImageUrl: app.userProfileImageUrl,
+        role: app.userRole,
+        program: app.userProgram,
+        coins: app.userCoins,
+        anonymizeLeaderboard: app.userAnonymizeLeaderboard,
+        createdAt: app.userCreatedAt,
+        updatedAt: app.userUpdatedAt,
+      },
+      opportunity: {
+        id: app.opportunityId,
+        title: app.opportunityTitle!,
+        shortDescription: app.opportunityShortDescription!,
+        coinsPerHour: app.opportunityCoinsPerHour,
+        maxCoins: app.opportunityMaxCoins,
+      },
+    }));
+  }
 }
 
 export const storage = new DatabaseStorage();

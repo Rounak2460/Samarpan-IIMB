@@ -6,18 +6,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
-import Home from "@/pages/home";
+import Home from "@/pages/home-enhanced";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import OpportunityDetail from "@/pages/opportunity-detail";
 import Profile from "@/pages/profile";
 import Leaderboard from "@/pages/leaderboard";
-import AdminDashboard from "@/pages/admin/dashboard";
-import AdminOpportunities from "@/pages/admin/opportunities-new";
+import AdminDashboard from "@/pages/admin/dashboard-new";
+import AdminOpportunities from "@/pages/admin/opportunities-enhanced";
 import OpportunityForm from "@/pages/admin/opportunity-form";
 import Applications from "@/pages/admin/applications";
 import Analytics from "@/pages/admin/analytics";
-import StudentDashboard from "@/pages/student/dashboard";
+import StudentDashboard from "@/pages/student/dashboard-enhanced";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();

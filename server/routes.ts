@@ -244,6 +244,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all applications for admin
+  app.get("/api/admin/applications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const applications = await storage.getAllApplicationsWithDetails();
+      res.json(applications);
+    } catch (error) {
+      console.error("Error fetching all applications:", error);
+      res.status(500).json({ message: "Failed to fetch applications" });
+    }
+  });
+
   app.patch("/api/applications/:id/submit-hours", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;

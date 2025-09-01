@@ -104,6 +104,31 @@
     border-bottom: 1px solid hsl(347, 85%, 42%);
   }
 
+  /* Engaging Coin Icon */
+  .coin-icon {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #B8860B;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    border: 1px solid #DAA520;
+    position: relative;
+  }
+
+  .coin-icon:before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 15%;
+    right: 15%;
+    height: 20%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent);
+    border-radius: 50%;
+  }
+
   .iimb-card {
     @apply bg-card border border-border rounded-xl shadow-sm;
     box-shadow: var(--shadow-soft);
