@@ -972,6 +972,9 @@ export class DatabaseStorage implements IStorage {
             coins: sql`${users.coins} + ${additionalCoins}`
           })
           .where(eq(users.id, application.userId));
+        
+        // Check and award badges after updating coins
+        await this.checkAndAwardBadges(application.userId);
       }
 
       // Check if opportunity should be auto-closed due to hours fulfillment
