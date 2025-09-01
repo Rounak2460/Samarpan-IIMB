@@ -22,7 +22,7 @@ export default function SuperHome() {
     enabled: !!user,
     refetchInterval: 10000, // Refresh every 10 seconds to catch auto-closed opportunities
     staleTime: 0, // Always consider data stale to force fresh fetches
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<any[]>({
@@ -51,9 +51,9 @@ export default function SuperHome() {
     return null; // Should redirect to landing page
   }
 
-  const opportunities = opportunitiesData?.opportunities || [];
+  const opportunities = (opportunitiesData as any)?.opportunities || [];
   // Filter to only show open opportunities (exclude closed and filled)
-  const activeOpportunities = opportunities.filter(opp => opp.status === "open");
+  const activeOpportunities = opportunities.filter((opp: any) => opp.status === "open");
   const topStudents = Array.isArray(leaderboard) ? leaderboard.slice(0, 5) : [];
   // Filter applications to only show those for open opportunities
   const activeApplications = Array.isArray(userApplications) ? userApplications.filter(app => 
@@ -290,7 +290,7 @@ export default function SuperHome() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {featuredOpportunities.map((opportunity, index: number) => (
+                  {featuredOpportunities.map((opportunity: any, index: number) => (
                     <div 
                       key={opportunity.id}
                       className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-100"

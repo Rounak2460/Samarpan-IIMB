@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import type { Opportunity, UserWithApplications } from "@shared/schema";
+import type { Opportunity } from "@shared/schema";
 
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth();
@@ -20,10 +20,10 @@ export default function Home() {
     enabled: !!user,
     refetchInterval: 10000, // Refresh every 10 seconds to catch auto-closed opportunities
     staleTime: 0, // Always consider data stale to force fresh fetches
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<UserWithApplications[]>({
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<any[]>({
     queryKey: ["/api/leaderboard"],
     enabled: !!user,
   });
@@ -49,12 +49,12 @@ export default function Home() {
     return null; // Should redirect to landing page
   }
 
-  const opportunities = opportunitiesData?.opportunities || [];
+  const opportunities = (opportunitiesData as any)?.opportunities || [];
   // Filter to only show open opportunities (exclude closed and filled)
-  const activeOpportunities = opportunities.filter(opp => opp.status === "open");
+  const activeOpportunities = opportunities.filter((opp: any) => opp.status === "open");
   const topStudents = (leaderboard || []).slice(0, 5);
   // Filter applications to only show those for open opportunities
-  const activeApplications = (userApplications || []).filter((app: any) => 
+  const activeApplications = (userApplications as any[] || []).filter((app: any) => 
     app.opportunity && app.opportunity.status === "open"
   );
   const recentApplications = activeApplications.slice(0, 3);
@@ -262,7 +262,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {activeOpportunities.slice(0, 3).map((opportunity) => (
+                    {activeOpportunities.slice(0, 3).map((opportunity: any) => (
                       <div key={opportunity.id} className="bg-gradient-to-r from-white to-green-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
