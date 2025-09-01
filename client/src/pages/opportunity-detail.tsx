@@ -33,8 +33,11 @@ export default function OpportunityDetail() {
 
   const applyMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/applications", {
-        opportunityId: id,
+      await apiRequest("/api/applications", {
+        method: "POST",
+        body: {
+          opportunityId: id,
+        },
       });
     },
     onSuccess: () => {
