@@ -124,9 +124,9 @@ export default function Applications() {
       coinsAwarded: number;
       feedback?: string;
     }) => {
-      await apiRequest(`/api/applications/${applicationId}/approve-hours`, {
-        method: "POST",
-        body: { coinsAwarded, feedback },
+      await apiRequest("POST", `/api/applications/${applicationId}/approve-hours`, {
+        coinsAwarded,
+        feedback,
       });
     },
     onSuccess: () => {
@@ -165,9 +165,8 @@ export default function Applications() {
       applicationId: string;
       feedback: string;
     }) => {
-      await apiRequest(`/api/applications/${applicationId}/reject-hours`, {
-        method: "POST",
-        body: { feedback },
+      await apiRequest("POST", `/api/applications/${applicationId}/reject-hours`, {
+        feedback,
       });
     },
     onSuccess: () => {
