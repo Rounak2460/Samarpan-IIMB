@@ -14,7 +14,6 @@ export default function Register() {
     email: "",
     firstName: "", 
     lastName: "",
-    role: "",
     program: ""
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +30,10 @@ export default function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          role: "student" // Always register as student, backend will assign admin role if email is admin@iimb.ac.in
+        }),
       });
 
       const data = await response.json();
@@ -160,26 +162,6 @@ export default function Register() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role" className="text-gray-700 font-medium">
-                  Account Type
-                </Label>
-                <Select 
-                  value={formData.role} 
-                  onValueChange={(value) => setFormData({...formData, role: value})}
-                >
-                  <SelectTrigger className="border-2 border-gray-200 rounded-xl h-12" data-testid="select-role">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student - Participate in opportunities</SelectItem>
-                    <SelectItem value="admin">Administrator - Manage platform & opportunities</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  Role is auto-detected from email but can be manually selected
-                </p>
-              </div>
 
               <Button
                 type="submit"
