@@ -42,7 +42,7 @@ export default function StudentDashboard() {
     enabled: !!user,
     refetchInterval: 10000, // Refresh every 10 seconds to catch auto-closed opportunities
     staleTime: 0, // Always consider data stale to force fresh fetches
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   const { data: applications, isLoading: applicationsLoading } = useQuery<ApplicationWithDetails[]>({
@@ -111,7 +111,7 @@ export default function StudentDashboard() {
     return null;
   }
 
-  const opportunities = opportunitiesData?.opportunities || [];
+  const opportunities = (opportunitiesData as any)?.opportunities || [];
   // Filter to only show open opportunities (exclude closed and filled)
   const activeOpportunities = opportunities.filter(opp => opp.status === "open");
   
@@ -233,15 +233,15 @@ export default function StudentDashboard() {
                             <span className="text-gray-500">
                               📅 Applied: {application.appliedAt ? format(new Date(application.appliedAt), "MMM dd, yyyy") : "Unknown"}
                             </span>
-                            {application.coinsAwarded > 0 && (
+                            {(application.coinsAwarded || 0) > 0 && (
                               <span className="text-green-600 font-medium flex items-center">
                                 <div className="coin-icon mr-1" style={{ width: "16px", height: "16px", fontSize: "12px" }}>₹</div>
-                                {application.coinsAwarded} coins earned
+                                {application.coinsAwarded || 0} coins earned
                               </span>
                             )}
-                            {application.hoursCompleted > 0 && (
+                            {(application.hoursCompleted || 0) > 0 && (
                               <span className="text-blue-600 font-medium">
-                                ⏱️ {application.hoursCompleted} hours completed
+                                ⏱️ {application.hoursCompleted || 0} hours completed
                               </span>
                             )}
                           </div>

@@ -43,7 +43,7 @@ export default function SuperStudentDashboard() {
     refetchInterval: 10000, // Refresh every 10 seconds to catch auto-closed opportunities
     enabled: !!user,
     staleTime: 0, // Always consider data stale to force fresh fetches
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results
   });
 
   const { data: applications, isLoading: applicationsLoading } = useQuery<ApplicationWithDetails[]>({
@@ -124,14 +124,14 @@ export default function SuperStudentDashboard() {
     return null;
   }
 
-  const opportunities = opportunitiesData?.opportunities || [];
+  const opportunities = (opportunitiesData as any)?.opportunities || [];
   // Filter to only show open opportunities (exclude closed and filled)
-  const activeOpportunities = opportunities.filter(opp => opp.status === "open");
-  const appliedOpportunityIds = new Set((applications || []).map(app => app.opportunityId));
-  const availableOpportunities = activeOpportunities.filter(opp => !appliedOpportunityIds.has(opp.id));
+  const activeOpportunities = opportunities.filter((opp: any) => opp.status === "open");
+  const appliedOpportunityIds = new Set((applications || []).map((app: any) => app.opportunityId));
+  const availableOpportunities = activeOpportunities.filter((opp: any) => !appliedOpportunityIds.has(opp.id));
 
   // Filter applications to only show those for open opportunities
-  const activeApplications = (applications || []).filter(app => 
+  const activeApplications = (applications || []).filter((app: any) => 
     app.opportunity && app.opportunity.status === "open"
   );
 
@@ -161,7 +161,7 @@ export default function SuperStudentDashboard() {
     let filtered = availableOpportunities;
 
     if (searchQuery) {
-      filtered = filtered.filter(opp => 
+      filtered = filtered.filter((opp: any) => 
         opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         opp.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
         opp.type.toLowerCase().includes(searchQuery.toLowerCase())
@@ -171,13 +171,13 @@ export default function SuperStudentDashboard() {
     switch (selectedFilter) {
       case "recommended":
         // Sort by coins per hour and user compatibility
-        return filtered.sort((a, b) => (b.coinsPerHour || 0) - (a.coinsPerHour || 0)).slice(0, 6);
+        return filtered.sort((a: any, b: any) => (b.coinsPerHour || 0) - (a.coinsPerHour || 0)).slice(0, 6);
       case "high_reward":
-        return filtered.sort((a, b) => (b.maxCoins || 0) - (a.maxCoins || 0));
+        return filtered.sort((a: any, b: any) => (b.maxCoins || 0) - (a.maxCoins || 0));
       case "quick_wins":
-        return filtered.filter(opp => opp.duration === "instant" || opp.duration === "1-3days");
+        return filtered.filter((opp: any) => opp.duration === "instant" || opp.duration === "1-3days");
       case "new":
-        return filtered.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        return filtered.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       default:
         return filtered;
     }
