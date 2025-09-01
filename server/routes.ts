@@ -244,6 +244,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/applications/:id/submit-hours", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { hours } = req.body;
+      const userId = req.user.id;
+
+      if (!hours || hours <= 0) {
+        return res.status(400).json({ message: "Valid hours required" });
+      }
+
+      // Check if user owns this application
+      const application = await storage.getApplicationById(id);
+      if (!application || application.user.id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (application.status !== "accepted") {
+        return res.status(400).json({ message: "Can only submit hours for accepted applications" });
+      }
+
+      const updatedApplication = await storage.submitApplicationHours(id, hours);
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Error submitting hours:", error);
+      res.status(500).json({ message: "Failed to submit hours" });
+    }
+  });
+
   app.put("/api/applications/:id/status", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;

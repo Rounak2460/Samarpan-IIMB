@@ -74,6 +74,7 @@ export const opportunities = pgTable("opportunities", {
   location: varchar("location"),
   schedule: varchar("schedule"),
   capacity: integer("capacity"), // Max participants
+  totalRequiredHours: integer("total_required_hours"), // Total hours needed for this opportunity
   status: opportunityStatusEnum("status").default("open"),
   coinsPerHour: integer("coins_per_hour").default(10), // Coins awarded per hour
   maxCoins: integer("max_coins").default(100), // Maximum coins that can be earned
@@ -89,6 +90,8 @@ export const opportunities = pgTable("opportunities", {
 export const applicationStatusEnum = pgEnum("application_status", [
   "pending",
   "accepted",
+  "hours_submitted",
+  "hours_approved",
   "completed",
   "rejected",
 ]);
@@ -103,6 +106,8 @@ export const applications = pgTable("applications", {
   notes: text("notes"), // Admin notes
   coinsAwarded: integer("coins_awarded").default(0),
   hoursCompleted: integer("hours_completed").default(0),
+  submittedHours: integer("submitted_hours").default(0), // Hours submitted by student
+  hourSubmissionDate: timestamp("hour_submission_date"), // When student submitted hours
   adminFeedback: text("admin_feedback"), // Admin feedback on completion
 });
 

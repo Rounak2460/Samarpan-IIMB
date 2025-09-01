@@ -81,6 +81,7 @@ export default function OpportunityForm() {
       location: "",
       schedule: "",
       capacity: undefined,
+      totalRequiredHours: undefined,
       status: "open",
       coinsPerHour: 10,
       maxCoins: 100,
@@ -106,6 +107,7 @@ export default function OpportunityForm() {
         location: opportunity.location ?? "",
         schedule: opportunity.schedule ?? "",
         capacity: opportunity.capacity ?? undefined,
+        totalRequiredHours: opportunity.totalRequiredHours ?? undefined,
         status: opportunity.status,
         coinsPerHour: opportunity.coinsPerHour,
         maxCoins: opportunity.maxCoins,
@@ -474,6 +476,32 @@ export default function OpportunityForm() {
                           )}
                         />
 
+                        <FormField
+                          control={form.control}
+                          name="totalRequiredHours"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Total Required Hours</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="Total hours needed"
+                                  data-testid="input-total-required-hours"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Total hours required to complete this opportunity
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="coinsPerHour"

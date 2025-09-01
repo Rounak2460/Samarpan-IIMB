@@ -852,7 +852,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateApplicationStatus(
     id: string,
-    status: "pending" | "accepted" | "completed" | "rejected",
+    status: "pending" | "accepted" | "hours_submitted" | "hours_approved" | "completed" | "rejected",
     notes?: string
   ): Promise<Application | undefined> {
     const updateData: any = { status, notes };
@@ -867,6 +867,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
     
+    return updated;
+  }
+
+  async submitApplicationHours(id: string, hours: number): Promise<Application | undefined> {
+    const [updated] = await db
+      .update(applications)
+      .set({
+        status: "hours_submitted",
+        submittedHours: hours,
+        hourSubmissionDate: new Date(),
+      })
+      .where(eq(applications.id, id))
+      .returning();
+
     return updated;
   }
 

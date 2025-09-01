@@ -1,5 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
@@ -7,16 +10,21 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
 import { format } from "date-fns";
 
 interface DashboardApplication {
   id: string;
-  status: "pending" | "accepted" | "completed" | "rejected";
+  status: "pending" | "accepted" | "hours_submitted" | "hours_approved" | "completed" | "rejected";
   appliedAt: string;
   completedAt?: string;
   coinsAwarded: number;
   hoursCompleted: number;
+  submittedHours: number;
+  hourSubmissionDate?: string;
   adminFeedback?: string;
   opportunity: {
     id: string;
@@ -31,6 +39,10 @@ interface DashboardApplication {
 
 export default function StudentDashboard() {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedApplication, setSelectedApplication] = useState<DashboardApplication | null>(null);
+  const [submittedHours, setSubmittedHours] = useState("");
 
   const { data: applications, isLoading } = useQuery<DashboardApplication[]>({
     queryKey: [`/api/applications/user/${user?.id}`],
@@ -47,6 +59,47 @@ export default function StudentDashboard() {
     queryKey: [`/api/users/${user?.id}/stats`],
     enabled: !!user?.id,
   });
+
+  const submitHoursMutation = useMutation({
+    mutationFn: async ({ applicationId, hours }: { applicationId: string; hours: number }) => {
+      await apiRequest("PATCH", `/api/applications/${applicationId}/submit-hours`, { hours });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Hours Submitted",
+        description: "Your hours have been submitted for admin review.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/applications/user/${user?.id}`] });
+      setSelectedApplication(null);
+      setSubmittedHours("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to submit hours. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmitHours = () => {
+    if (!selectedApplication || !submittedHours) return;
+    
+    const hours = parseInt(submittedHours);
+    if (isNaN(hours) || hours <= 0) {
+      toast({
+        title: "Invalid Hours",
+        description: "Please enter a valid number of hours.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    submitHoursMutation.mutate({
+      applicationId: selectedApplication.id,
+      hours,
+    });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -69,6 +122,8 @@ export default function StudentDashboard() {
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-800";
       case "accepted": return "bg-blue-100 text-blue-800";
+      case "hours_submitted": return "bg-purple-100 text-purple-800";
+      case "hours_approved": return "bg-indigo-100 text-indigo-800";
       case "completed": return "bg-green-100 text-green-800";
       case "rejected": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
@@ -234,9 +289,70 @@ export default function StudentDashboard() {
                                 {application.opportunity.shortDescription}
                               </p>
                             </div>
-                            <Badge className={getStatusColor(application.status)} data-testid="badge-application-status">
-                              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                            </Badge>
+                            <div className="flex items-center space-x-2">
+                              <Badge className={getStatusColor(application.status)} data-testid="badge-application-status">
+                                {application.status.charAt(0).toUpperCase() + application.status.slice(1).replace('_', ' ')}
+                              </Badge>
+                              {application.status === "accepted" && (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => setSelectedApplication(application)}
+                                      data-testid="button-submit-hours"
+                                    >
+                                      Submit Hours
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                      <DialogTitle>Submit Hours</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <h4 className="font-medium">{application.opportunity.title}</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                          {application.opportunity.shortDescription}
+                                        </p>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="hours">Hours Completed</Label>
+                                        <Input
+                                          id="hours"
+                                          type="number"
+                                          placeholder="Enter hours completed"
+                                          value={submittedHours}
+                                          onChange={(e) => setSubmittedHours(e.target.value)}
+                                          data-testid="input-submitted-hours"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                          Rate: {application.opportunity.coinsPerHour} coins/hour (max {application.opportunity.maxCoins} coins)
+                                        </p>
+                                      </div>
+                                      <div className="flex justify-end space-x-2">
+                                        <Button 
+                                          variant="outline" 
+                                          onClick={() => {
+                                            setSelectedApplication(null);
+                                            setSubmittedHours("");
+                                          }}
+                                        >
+                                          Cancel
+                                        </Button>
+                                        <Button 
+                                          onClick={handleSubmitHours}
+                                          disabled={submitHoursMutation.isPending}
+                                          data-testid="button-confirm-submit-hours"
+                                        >
+                                          {submitHoursMutation.isPending ? "Submitting..." : "Submit Hours"}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
@@ -248,6 +364,11 @@ export default function StudentDashboard() {
                                 Completed: {format(new Date(application.completedAt), "MMM dd, yyyy")}
                               </span>
                             )}
+                            {application.hourSubmissionDate && (
+                              <span>
+                                Hours Submitted: {format(new Date(application.hourSubmissionDate), "MMM dd, yyyy")}
+                              </span>
+                            )}
                           </div>
 
                           {/* Progress Details */}
@@ -257,6 +378,11 @@ export default function StudentDashboard() {
                                 {application.hoursCompleted || 0}h
                               </div>
                               <div className="text-xs text-muted-foreground">Hours Completed</div>
+                              {application.submittedHours > 0 && application.status === "hours_submitted" && (
+                                <div className="text-xs text-purple-600 mt-1">
+                                  {application.submittedHours}h submitted (pending review)
+                                </div>
+                              )}
                             </div>
                             <div className="text-center p-3 bg-muted/50 rounded">
                               <div className="flex items-center justify-center space-x-1 text-lg font-medium text-primary">
