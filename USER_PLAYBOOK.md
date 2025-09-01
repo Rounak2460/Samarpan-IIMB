@@ -327,13 +327,19 @@ This playbook provides step-by-step instructions for using the IIMB Samarpan pla
 #### Step 5: Set Participation and Rewards
 **Continue with:**
 
-9. **Capacity:**
-   - Enter maximum number of participants
-   - Leave blank for unlimited
+9. **Total Required Hours:**
+   - Enter total hours needed to complete this opportunity
+   - Used for auto-closing when target is reached
+   - Enables progress tracking for administrators
+
+10. **Capacity:**
+    - Enter maximum number of participants
+    - Leave blank for unlimited
 
 10. **Coins Per Hour:**
-    - Set hourly coin reward rate
-    - Recommended: 10-50 coins per hour
+    - Set hourly coin reward rate (manual input, starts at 1)
+    - Fully customizable based on opportunity complexity
+    - Range: 1-100+ coins per hour depending on skill requirements
 
 11. **Maximum Coins:**
     - Set total coin cap for this opportunity
@@ -409,11 +415,25 @@ This playbook provides step-by-step instructions for using the IIMB Samarpan pla
 - Current status
 - Action buttons
 
+#### Step 4: Submitting Hours for Accepted Applications
+1. **For accepted applications,** click **"Submit Hours"** button
+2. **Hour submission modal opens** with:
+   - Current submitted hours display
+   - Hour entry field
+   - Description of work completed
+   - Submit button
+3. **Enter hours worked** since last submission
+4. **Add description** of activities completed
+5. **Click "Submit Hours"** - you can submit multiple times
+6. **Admin reviews** and approves each submission
+7. **Coins are awarded** for each approved hour entry
+
 **To review an application:**
 1. **Click** **"View Details"** button for any application
 2. **Application detail modal opens** showing:
    - Student information
    - Application responses
+   - Hour submission history
    - Opportunity details
    - Admin action buttons
 
@@ -435,23 +455,25 @@ This playbook provides step-by-step instructions for using the IIMB Samarpan pla
 - **Student status** changes to "Accepted"
 - **Student** can now begin volunteering
 
-#### Step 5: Mark Activities as Completed
-**For Accepted Applications:**
+#### Step 5: Managing Iterative Hour Submissions
+**For Applications with Hour Submissions:**
 
-1. **After student completes** volunteer work
-2. **Click** **"Mark as Completed"** button
-3. **Completion form opens** with fields:
-   - **Hours Completed:** Enter actual hours worked
-   - **Admin Feedback:** Provide performance feedback
-   - **Quality Rating:** Optional rating system
+1. **Review student's** submitted hours and work description
+2. **Check the progress bar** showing total approved hours vs. required hours
+3. **Click** either:
+   - **"Approve Hours"** (green button) - Awards coins immediately
+   - **"Reject Hours"** (red button) - Requires feedback
 
-4. **Fill in required information:**
-   - **Hours Completed:** Must be accurate for coin calculation
-   - **Feedback:** Constructive comments about their contribution
+4. **For approved hours:**
+   - **Coins are automatically calculated** as: `submitted_hours × coins_per_hour`
+   - **Progress bar updates** showing cumulative approved hours
+   - **Student can submit** additional hours if opportunity remains open
 
-5. **Click** **"Confirm Completion"**
-6. **Coins are automatically calculated** as: `hours × coins_per_hour` (capped at max_coins)
-7. **Student receives** coins and sees completion in their dashboard
+5. **Auto-closing behavior:**
+   - **When total approved hours** meet or exceed the required hours
+   - **Opportunity automatically closes** (status changes to "filled")
+   - **No more hour submissions** are accepted
+   - **Students see completion** in their dashboard
 
 ---
 

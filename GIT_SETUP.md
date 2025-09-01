@@ -19,7 +19,7 @@ This guide covers:
 4. Fill in repository details:
    ```
    Repository name: iimb-samarpan
-   Description: Enterprise-grade social volunteering platform for IIM Bangalore students
+   Description: Enterprise-grade social volunteering platform with iterative hour submission and auto-closing features for IIM Bangalore students
    Visibility: Private (recommended for institutional projects)
    Initialize: Do NOT check any initialization options
    ```
@@ -68,10 +68,13 @@ git add .
 git commit -m "Initial commit: IIMB Samarpan enterprise platform
 
 Features:
-- Hourly-based coin reward system
+- Flexible hourly-based coin reward system (starting from 1 coin/hr)
+- Iterative hour submission workflow
+- Auto-closing opportunities when hour targets are met
+- Real-time progress tracking with progress bars
 - Enterprise-grade IIMB branding
 - Student and admin role management  
-- Opportunity management system
+- Enhanced opportunity management system
 - Gamification with badges and leaderboard
 - PostgreSQL database with Drizzle ORM
 - Replit OpenID Connect authentication"
@@ -99,9 +102,9 @@ git checkout main
 On GitHub, configure these repository settings:
 
 **General Settings:**
-- Description: "Enterprise-grade social volunteering platform for IIM Bangalore students"
+- Description: "Enterprise-grade social volunteering platform with iterative hour submission and auto-closing for IIM Bangalore students"
 - Website: Your deployed application URL
-- Topics: `social-impact`, `volunteering`, `iim-bangalore`, `react`, `typescript`, `enterprise`
+- Topics: `social-impact`, `volunteering`, `iim-bangalore`, `react`, `typescript`, `enterprise`, `auto-closing`, `iterative-workflow`
 
 **Branch Protection Rules** (Settings → Branches):
 ```
