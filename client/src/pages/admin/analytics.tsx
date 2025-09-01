@@ -513,15 +513,6 @@ export default function Analytics() {
                     Create New Opportunity
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => window.location.href = "/admin/opportunities"}
-                    data-testid="button-quick-manage-opportunities"
-                  >
-                    <i className="fas fa-cog mr-2"></i>
-                    Manage Opportunities
-                  </Button>
 
                   <Button
                     variant="outline"

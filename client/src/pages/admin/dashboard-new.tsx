@@ -491,12 +491,6 @@ export default function AdminDashboard() {
                           </div>
 
                           <div className="flex space-x-2 pt-2">
-                            <Link href="/admin/opportunities" className="flex-1">
-                              <Button variant="outline" size="sm" className="w-full" data-testid={`button-manage-${opportunity.id}`}>
-                                <i className="fas fa-cog mr-2"></i>
-                                Manage Applications
-                              </Button>
-                            </Link>
                           </div>
                         </div>
                       </div>
@@ -524,12 +518,6 @@ export default function AdminDashboard() {
                   </Button>
                 </Link>
                 
-                <Link href="/admin/opportunities">
-                  <Button className="w-full h-20 flex flex-col items-center justify-center bg-purple-600 hover:bg-purple-700" data-testid="button-quick-manage-all">
-                    <i className="fas fa-list text-2xl mb-2"></i>
-                    <span className="text-sm">All Opportunities</span>
-                  </Button>
-                </Link>
                 
                 <Link href="/admin/analytics">
                   <Button className="w-full h-20 flex flex-col items-center justify-center bg-green-600 hover:bg-green-700" data-testid="button-quick-analytics">
