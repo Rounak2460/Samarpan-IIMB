@@ -34,6 +34,11 @@ export default function AdminOpportunities() {
     enabled: !!user && user.role === "admin",
   });
 
+  const { data: opportunityProgress, isLoading: progressLoading } = useQuery({
+    queryKey: ["/api/opportunity-progress"],
+    enabled: !!user && user.role === "admin",
+  });
+
   // Application management mutations
   const updateStatusMutation = useMutation({
     mutationFn: async (data: {
@@ -74,6 +79,7 @@ export default function AdminOpportunities() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunity-progress"] });
       toast({
         title: "🎉 Hours Approved!",
         description: "Student has been awarded coins for their work",
@@ -99,6 +105,7 @@ export default function AdminOpportunities() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunity-progress"] });
       toast({
         title: "📝 Hours Rejected",
         description: "Feedback sent to student",
@@ -293,10 +300,9 @@ export default function AdminOpportunities() {
                 const completedCount = opportunityApplications.filter(app => app.status === "completed" || app.status === "hours_approved").length;
                 const acceptedCount = opportunityApplications.filter(app => app.status === "accepted").length;
                 
-                // Calculate approved hours and progress
-                const approvedHours = opportunityApplications
-                  .filter(app => app.status === "completed" || app.status === "hours_approved")
-                  .reduce((total, app) => total + (app.hoursCompleted || 0), 0);
+                // Get real-time progress data from server
+                const progressData = (opportunityProgress || []).find((p: any) => p.id === opportunity.id);
+                const approvedHours = progressData ? progressData.completedHours : 0;
                 const totalRequiredHours = opportunity.totalRequiredHours || 0;
                 const progressPercentage = totalRequiredHours > 0 
                   ? Math.min((approvedHours / totalRequiredHours) * 100, 100) 
@@ -366,8 +372,8 @@ export default function AdminOpportunities() {
                       {totalRequiredHours > 0 && (
                         <div className="mb-6">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700">Hours Progress</span>
-                            <span className="text-sm text-gray-600">{approvedHours} / {totalRequiredHours} hours</span>
+                            <span className="text-sm font-medium text-gray-700">📊 Cumulative Hours Progress</span>
+                            <span className="text-sm font-semibold text-gray-800">{approvedHours} hrs completed out of {totalRequiredHours} required</span>
                           </div>
                           <Progress value={progressPercentage} className="h-3" />
                           <div className="flex justify-between items-center mt-1">

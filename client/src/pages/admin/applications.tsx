@@ -131,6 +131,8 @@ export default function Applications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications/opportunity", opportunityId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunity-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/applications"] });
       setApproveHoursDialogOpen(false);
       setApprovalCoins(1);
       setSelectedApplication(null);

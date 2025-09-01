@@ -75,6 +75,8 @@ export default function AdminOpportunities() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications/opportunity"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunity-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/applications"] });
       toast({
         title: "Success",
         description: "Hours approved successfully",

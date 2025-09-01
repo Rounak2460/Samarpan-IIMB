@@ -174,20 +174,22 @@ export default function AdminDashboard() {
                         {opportunity.totalRequiredHours ? (
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                              <span>Hours Progress</span>
-                              <span>{opportunity.completedHours} / {opportunity.totalRequiredHours} hours</span>
+                              <span className="font-medium">📊 Cumulative Hours</span>
+                              <span className="font-semibold">{opportunity.completedHours} hrs completed out of {opportunity.totalRequiredHours} required</span>
                             </div>
-                            <Progress value={progressPercentage} className="h-2" />
-                            <div className="text-xs text-muted-foreground">
-                              {progressPercentage.toFixed(1)}% complete
+                            <Progress value={progressPercentage} className="h-3" />
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-muted-foreground">
+                                {progressPercentage.toFixed(1)}% complete
+                              </span>
                               {progressPercentage >= 100 && (
-                                <span className="ml-2 text-green-600 font-medium">✓ Target Reached</span>
+                                <span className="text-xs text-green-600 font-medium">✓ Target Reached</span>
                               )}
                             </div>
                           </div>
                         ) : (
                           <div className="text-sm text-muted-foreground">
-                            No hour target set • {opportunity.completedHours} hours completed
+                            <span className="font-medium">📊 Cumulative Hours:</span> {opportunity.completedHours} hrs completed • No target set
                           </div>
                         )}
                       </div>

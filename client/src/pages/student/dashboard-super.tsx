@@ -64,6 +64,7 @@ export default function SuperStudentDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/applications/user/${user?.id}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunity-progress"] });
       setSelectedApplication(null);
       setSubmittedHours("");
       toast({
