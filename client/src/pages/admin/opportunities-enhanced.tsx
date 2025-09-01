@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
 import type { OpportunityWithCreator, ApplicationWithDetails } from "@shared/schema";
 
 export default function AdminOpportunities() {
@@ -107,6 +108,46 @@ export default function AdminOpportunities() {
       toast({
         title: "❌ Error",
         description: "Failed to reject hours",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const closeOpportunityMutation = useMutation({
+    mutationFn: async (opportunityId: string) => {
+      await apiRequest("PATCH", `/api/opportunities/${opportunityId}/close`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      toast({
+        title: "🔒 Opportunity Closed",
+        description: "Students can no longer apply to this opportunity",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Error",
+        description: "Failed to close opportunity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteOpportunityMutation = useMutation({
+    mutationFn: async (opportunityId: string) => {
+      await apiRequest("DELETE", `/api/opportunities/${opportunityId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      toast({
+        title: "🗑️ Opportunity Deleted",
+        description: "Opportunity has been permanently removed",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Error",
+        description: "Failed to delete opportunity",
         variant: "destructive",
       });
     },
@@ -251,6 +292,15 @@ export default function AdminOpportunities() {
                 const hoursSubmittedCount = opportunityApplications.filter(app => app.status === "hours_submitted").length;
                 const completedCount = opportunityApplications.filter(app => app.status === "completed" || app.status === "hours_approved").length;
                 const acceptedCount = opportunityApplications.filter(app => app.status === "accepted").length;
+                
+                // Calculate approved hours and progress
+                const approvedHours = opportunityApplications
+                  .filter(app => app.status === "completed" || app.status === "hours_approved")
+                  .reduce((total, app) => total + (app.hoursCompleted || 0), 0);
+                const totalRequiredHours = opportunity.totalRequiredHours || 0;
+                const progressPercentage = totalRequiredHours > 0 
+                  ? Math.min((approvedHours / totalRequiredHours) * 100, 100) 
+                  : 0;
 
                 return (
                   <Card key={opportunity.id} className="shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
@@ -312,13 +362,64 @@ export default function AdminOpportunities() {
                         </div>
                       </div>
 
+                      {/* Progress Bar Section */}
+                      {totalRequiredHours > 0 && (
+                        <div className="mb-6">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700">Hours Progress</span>
+                            <span className="text-sm text-gray-600">{approvedHours} / {totalRequiredHours} hours</span>
+                          </div>
+                          <Progress value={progressPercentage} className="h-3" />
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              {progressPercentage.toFixed(1)}% complete
+                            </span>
+                            {progressPercentage >= 100 && (
+                              <span className="text-xs text-green-600 font-medium">✓ Target Reached</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Expanded Applications Section */}
                       {expandedOpportunity === opportunity.id && (
                         <div className="border-t pt-6">
-                          <h4 className="font-semibold mb-4 flex items-center text-lg">
-                            <i className="fas fa-users mr-3 text-blue-600"></i>
-                            Applications Management ({opportunityApplications.length} total)
-                          </h4>
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-semibold flex items-center text-lg">
+                              <i className="fas fa-users mr-3 text-blue-600"></i>
+                              Applications Management ({opportunityApplications.length} total)
+                            </h4>
+                            
+                            {/* Close/Remove Actions */}
+                            <div className="flex space-x-2">
+                              {opportunity.status === 'open' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => closeOpportunityMutation.mutate(opportunity.id)}
+                                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                                  data-testid={`button-close-${opportunity.id}`}
+                                >
+                                  <i className="fas fa-lock mr-2"></i>
+                                  Close
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (window.confirm('Are you sure you want to permanently delete this opportunity? This action cannot be undone.')) {
+                                    deleteOpportunityMutation.mutate(opportunity.id);
+                                  }
+                                }}
+                                className="border-red-300 text-red-700 hover:bg-red-50"
+                                data-testid={`button-delete-${opportunity.id}`}
+                              >
+                                <i className="fas fa-trash mr-2"></i>
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
                           
                           {opportunityApplications.length === 0 ? (
                             <div className="text-center py-12 bg-gray-50 rounded-lg">
