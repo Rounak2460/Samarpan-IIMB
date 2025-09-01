@@ -1007,40 +1007,60 @@ export class DatabaseStorage implements IStorage {
   }
 
   async checkAndCloseOpportunityByHours(opportunityId: string): Promise<void> {
-    // Get opportunity details
-    const [opportunity] = await db
-      .select()
-      .from(opportunities)
-      .where(eq(opportunities.id, opportunityId));
-
-    if (!opportunity || !opportunity.totalRequiredHours) {
-      return; // No hours limit set
-    }
-
-    // Calculate total completed hours for this opportunity
-    const [result] = await db
-      .select({
-        totalHours: sql<number>`COALESCE(SUM(${applications.hoursCompleted}), 0)`,
-      })
-      .from(applications)
-      .where(
-        and(
-          eq(applications.opportunityId, opportunityId),
-          or(eq(applications.status, "completed"), eq(applications.status, "hours_approved"))
-        )
-      );
-
-    const totalCompletedHours = Number(result?.totalHours || 0);
-
-    // Close opportunity if hours limit reached
-    if (totalCompletedHours >= opportunity.totalRequiredHours) {
-      await db
-        .update(opportunities)
-        .set({
-          status: "filled",
-          updatedAt: new Date(),
-        })
+    try {
+      console.log(`[AUTO-CLOSE] Checking opportunity ${opportunityId} for auto-close...`);
+      
+      // Get opportunity details
+      const [opportunity] = await db
+        .select()
+        .from(opportunities)
         .where(eq(opportunities.id, opportunityId));
+
+      if (!opportunity) {
+        console.log(`[AUTO-CLOSE] Opportunity ${opportunityId} not found`);
+        return;
+      }
+
+      if (!opportunity.totalRequiredHours) {
+        console.log(`[AUTO-CLOSE] Opportunity ${opportunityId} has no hour limit set`);
+        return;
+      }
+
+      console.log(`[AUTO-CLOSE] Opportunity "${opportunity.title}" requires ${opportunity.totalRequiredHours} hours`);
+
+      // Calculate total completed hours for this opportunity
+      const [result] = await db
+        .select({
+          totalHours: sql<number>`COALESCE(SUM(${applications.hoursCompleted}), 0)`,
+        })
+        .from(applications)
+        .where(
+          and(
+            eq(applications.opportunityId, opportunityId),
+            or(eq(applications.status, "completed"), eq(applications.status, "hours_approved"))
+          )
+        );
+
+      const totalCompletedHours = Number(result?.totalHours || 0);
+      console.log(`[AUTO-CLOSE] Current completed hours: ${totalCompletedHours} / ${opportunity.totalRequiredHours}`);
+
+      // Close opportunity if hours limit reached
+      if (totalCompletedHours >= opportunity.totalRequiredHours) {
+        console.log(`[AUTO-CLOSE] Hour limit reached! Closing opportunity "${opportunity.title}"`);
+        
+        await db
+          .update(opportunities)
+          .set({
+            status: "filled",
+          })
+          .where(eq(opportunities.id, opportunityId));
+          
+        console.log(`[AUTO-CLOSE] Successfully closed opportunity "${opportunity.title}"`);
+      } else {
+        console.log(`[AUTO-CLOSE] Hour limit not yet reached for "${opportunity.title}"`);
+      }
+    } catch (error) {
+      console.error(`[AUTO-CLOSE] Error checking opportunity ${opportunityId}:`, error);
     }
   }
 
