@@ -382,42 +382,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Student submits hours for an accepted application
-  app.post("/api/applications/:id/submit-hours", isAuthenticated, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const { hours } = req.body;
-      const userId = req.user.id;
-
-      if (!hours || hours <= 0) {
-        return res.status(400).json({ message: "Valid hours required" });
-      }
-
-      // Check if the application belongs to the requesting user
-      const application = await storage.getApplicationById(id);
-      if (!application) {
-        return res.status(404).json({ message: "Application not found" });
-      }
-
-      if (application.userId !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      if (application.status !== "accepted") {
-        return res.status(400).json({ message: "Application must be accepted before submitting hours" });
-      }
-
-      const updatedApplication = await storage.submitStudentHours(id, hours);
-      if (!updatedApplication) {
-        return res.status(500).json({ message: "Failed to submit hours" });
-      }
-
-      res.json(updatedApplication);
-    } catch (error) {
-      console.error("Error submitting student hours:", error);
-      res.status(500).json({ message: "Failed to submit hours" });
-    }
-  });
 
   // Admin approves student hours
   app.post("/api/applications/:id/approve-hours", isAuthenticated, async (req: any, res) => {
