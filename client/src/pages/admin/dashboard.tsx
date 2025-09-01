@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "wouter";
 import { format } from "date-fns";
 
@@ -37,6 +38,11 @@ export default function AdminDashboard() {
 
   const { data: recentApplications, isLoading: applicationsLoading } = useQuery({
     queryKey: ["/api/applications/recent"],
+    enabled: !!user && user.role === "admin",
+  });
+
+  const { data: opportunityProgress, isLoading: progressLoading } = useQuery({
+    queryKey: ["/api/opportunity-progress"],
     enabled: !!user && user.role === "admin",
   });
 
@@ -118,6 +124,79 @@ export default function AdminDashboard() {
 
           {/* KPI Cards */}
           <KPICards analytics={analytics} isLoading={analyticsLoading} />
+
+          {/* Progress Tracker */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <i className="fas fa-chart-line text-primary"></i>
+                <span>Opportunity Progress Tracker</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {progressLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-2 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : !opportunityProgress || opportunityProgress.length === 0 ? (
+                <div className="text-center py-8">
+                  <i className="fas fa-chart-line text-muted-foreground text-4xl mb-4"></i>
+                  <h3 className="text-lg font-medium mb-2">No Opportunities</h3>
+                  <p className="text-muted-foreground">Create opportunities to start tracking progress</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {opportunityProgress.map((opportunity: any) => {
+                    const progressPercentage = opportunity.totalRequiredHours 
+                      ? Math.min((opportunity.completedHours / opportunity.totalRequiredHours) * 100, 100)
+                      : 0;
+                    
+                    return (
+                      <div key={opportunity.id} className="p-4 border rounded-lg">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-foreground mb-1">{opportunity.title}</h4>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <span>{opportunity.totalApplications} applications</span>
+                              <span>{opportunity.completedApplications} completed</span>
+                              <Badge className={opportunity.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                                {opportunity.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {opportunity.totalRequiredHours ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Hours Progress</span>
+                              <span>{opportunity.completedHours} / {opportunity.totalRequiredHours} hours</span>
+                            </div>
+                            <Progress value={progressPercentage} className="h-2" />
+                            <div className="text-xs text-muted-foreground">
+                              {progressPercentage.toFixed(1)}% complete
+                              {progressPercentage >= 100 && (
+                                <span className="ml-2 text-green-600 font-medium">✓ Target Reached</span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            No hour target set • {opportunity.completedHours} hours completed
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Executive Action Center and Activity Monitor */}
           <div className="grid lg:grid-cols-2 gap-8">

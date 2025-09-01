@@ -52,6 +52,173 @@ export default function AdminOpportunities() {
   const [adminFeedback, setAdminFeedback] = useState("");
   const pageSize = 10;
 
+  // Close opportunity mutation
+  const closeOpportunityMutation = useMutation({
+    mutationFn: async (opportunityId: string) => {
+      return await apiRequest(`/api/opportunities/${opportunityId}/close`, {
+        method: "PATCH",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      toast({
+        title: "Success",
+        description: "Opportunity closed successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to close opportunity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete opportunity mutation
+  const deleteOpportunityMutation = useMutation({
+    mutationFn: async (opportunityId: string) => {
+      return await apiRequest(`/api/opportunities/${opportunityId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
+      toast({
+        title: "Success",
+        description: "Opportunity removed successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to remove opportunity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Student hour approval mutation
+  const approveHoursMutation = useMutation({
+    mutationFn: async ({ applicationId, coinsAwarded, feedback }: {
+      applicationId: string;
+      coinsAwarded: number;
+      feedback?: string;
+    }) => {
+      return await apiRequest(`/api/applications/${applicationId}/approve-hours`, {
+        method: "POST",
+        body: { coinsAwarded, feedback },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`] });
+      setApplicantAction(null);
+      setHoursCompleted("");
+      setAdminFeedback("");
+      toast({
+        title: "Success",
+        description: "Hours approved successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to approve hours",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Student hour rejection mutation
+  const rejectHoursMutation = useMutation({
+    mutationFn: async ({ applicationId, feedback }: {
+      applicationId: string;
+      feedback: string;
+    }) => {
+      return await apiRequest(`/api/applications/${applicationId}/reject-hours`, {
+        method: "POST",
+        body: { feedback },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`] });
+      setApplicantAction(null);
+      setAdminFeedback("");
+      toast({
+        title: "Success",
+        description: "Hours rejected successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized", 
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to reject hours",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk action handler
+  const handleBulkAction = async (action: string) => {
+    if (selectedOpportunities.length === 0) return;
+
+    if (action === "close") {
+      for (const oppId of selectedOpportunities) {
+        closeOpportunityMutation.mutate(oppId);
+      }
+      setSelectedOpportunities([]);
+    } else if (action === "delete") {
+      for (const oppId of selectedOpportunities) {
+        deleteOpportunityMutation.mutate(oppId);
+      }
+      setSelectedOpportunities([]);
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && (!user || user.role !== "admin")) {
       toast({
@@ -76,114 +243,6 @@ export default function AdminOpportunities() {
     enabled: !!selectedOpportunityId,
   });
 
-  const deleteOpportunityMutation = useMutation({
-    mutationFn: async (opportunityId: string) => {
-      await apiRequest("DELETE", `/api/opportunities/${opportunityId}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Opportunity deleted successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
-      setSelectedOpportunities([]);
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete opportunity",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await apiRequest("PUT", `/api/opportunities/${id}`, { status });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Opportunity status updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
-      setSelectedOpportunities([]);
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update opportunity status",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateApplicationMutation = useMutation({
-    mutationFn: async ({ applicationId, status, hoursCompleted, adminFeedback }: {
-      applicationId: string;
-      status: string;
-      hoursCompleted?: number;
-      adminFeedback?: string;
-    }) => {
-      const body: any = { status };
-      if (hoursCompleted !== undefined) body.hoursCompleted = hoursCompleted;
-      if (adminFeedback) body.adminFeedback = adminFeedback;
-      await apiRequest("PUT", `/api/applications/${applicationId}/status`, body);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Application updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/opportunities"] });
-      queryClient.invalidateQueries({ queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`] });
-      setApplicantAction(null);
-      setHoursCompleted("");
-      setAdminFeedback("");
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update application",
-        variant: "destructive",
-      });
-    },
-  });
-
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -199,38 +258,24 @@ export default function AdminOpportunities() {
     return null;
   }
 
-  // Filter opportunities based on search and status
-  const filteredOpportunities = opportunities?.filter(opp => {
-    const matchesSearch = !searchQuery || opp.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         opp.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || opp.status === statusFilter;
+  // Filter opportunities
+  const filteredOpportunities = (opportunities || []).filter((opportunity) => {
+    const matchesSearch = opportunity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opportunity.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || opportunity.status === statusFilter;
     return matchesSearch && matchesStatus;
-  }) || [];
-  
-  // Pagination for filtered opportunities
+  });
+
   const totalOpportunities = filteredOpportunities.length;
   const totalPages = Math.ceil(totalOpportunities / pageSize);
-  const paginatedOpportunities = filteredOpportunities.slice(
-    (currentPage - 1) * pageSize, 
-    currentPage * pageSize
-  );
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedOpportunities = filteredOpportunities.slice(startIndex, startIndex + pageSize);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "open": return "bg-green-100 text-green-800";
-      case "closed": return "bg-red-100 text-red-800";
-      case "filled": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "teaching": return "bg-primary/10 text-primary";
-      case "donation": return "bg-chart-1/10 text-chart-1";
-      case "mentoring": return "bg-chart-2/10 text-chart-2";
-      case "community_service": return "bg-chart-3/10 text-chart-3";
-      default: return "bg-muted text-muted-foreground";
+  const handleSelectOpportunity = (opportunityId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOpportunities([...selectedOpportunities, opportunityId]);
+    } else {
+      setSelectedOpportunities(selectedOpportunities.filter(id => id !== opportunityId));
     }
   };
 
@@ -242,55 +287,51 @@ export default function AdminOpportunities() {
     }
   };
 
-  const handleSelectOpportunity = (opportunityId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedOpportunities([...selectedOpportunities, opportunityId]);
-    } else {
-      setSelectedOpportunities(selectedOpportunities.filter(id => id !== opportunityId));
-    }
-  };
-
-  const handleBulkAction = async (action: string) => {
-    if (selectedOpportunities.length === 0) return;
-
-    try {
-      if (action === "close") {
-        for (const id of selectedOpportunities) {
-          await updateStatusMutation.mutateAsync({ id, status: "closed" });
-        }
-      } else if (action === "delete") {
-        for (const id of selectedOpportunities) {
-          await deleteOpportunityMutation.mutateAsync(id);
-        }
-      }
-    } catch (error) {
-      // Error handling is done in the mutations
-    }
-  };
-
   const handleApplicantAction = (applicationId: string, action: 'approve' | 'reject') => {
-    if (action === 'approve') {
-      setApplicantAction({ id: applicationId, action });
-    } else {
-      updateApplicationMutation.mutate({
-        applicationId,
-        status: 'rejected'
-      });
-    }
+    setApplicantAction({ id: applicationId, action });
   };
 
-  const handleApproveWithDetails = () => {
-    if (!applicantAction) return;
-    
-    updateApplicationMutation.mutate({
+  const handleApproveHours = () => {
+    if (!applicantAction || !hoursCompleted) return;
+
+    const coinsAwarded = parseInt(hoursCompleted) * 10; // 10 coins per hour
+    approveHoursMutation.mutate({
       applicationId: applicantAction.id,
-      status: 'completed',
-      hoursCompleted: hoursCompleted ? parseFloat(hoursCompleted) : undefined,
-      adminFeedback: adminFeedback || undefined
+      coinsAwarded,
+      feedback: adminFeedback,
     });
   };
 
-  const selectedOpportunity = opportunities?.find(opp => opp.id === selectedOpportunityId);
+  const handleRejectHours = () => {
+    if (!applicantAction || !adminFeedback) return;
+
+    rejectHoursMutation.mutate({
+      applicationId: applicantAction.id,
+      feedback: adminFeedback,
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "open": return "bg-green-100 text-green-800";
+      case "closed": return "bg-red-100 text-red-800";
+      case "filled": return "bg-blue-100 text-blue-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getApplicationStatusColor = (status: string) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "accepted": return "bg-blue-100 text-blue-800";
+      case "hours_submitted": return "bg-purple-100 text-purple-800";
+      case "hours_approved": return "bg-green-100 text-green-800";
+      case "hours_rejected": return "bg-red-100 text-red-800";
+      case "completed": return "bg-green-100 text-green-800";
+      case "rejected": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -402,318 +443,322 @@ export default function AdminOpportunities() {
                   </Link>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-border">
-                      <tr className="text-left">
-                        <th className="py-3 pl-4">
-                          <Checkbox
-                            checked={selectedOpportunities.length === paginatedOpportunities.length && paginatedOpportunities.length > 0}
-                            onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
-                            data-testid="checkbox-select-all"
-                          />
-                        </th>
-                        <th className="py-3 text-muted-foreground font-medium">Title</th>
-                        <th className="py-3 text-muted-foreground font-medium">Status</th>
-                        <th className="py-3 text-muted-foreground font-medium">Type</th>
-                        <th className="py-3 text-muted-foreground font-medium">Applicants</th>
-                        <th className="py-3 text-muted-foreground font-medium">Created</th>
-                        <th className="py-3 text-muted-foreground font-medium">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedOpportunities.map((opportunity: OpportunityWithCreator) => (
-                        <tr
-                          key={opportunity.id}
-                          className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
-                          data-testid={`opportunity-row-${opportunity.id}`}
-                          onClick={() => setSelectedOpportunityId(opportunity.id)}
-                        >
-                          <td className="py-4 pl-4" onClick={(e) => e.stopPropagation()}>
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="border-b border-border">
+                        <tr className="text-left">
+                          <th className="py-3 pl-4">
                             <Checkbox
-                              checked={selectedOpportunities.includes(opportunity.id)}
-                              onCheckedChange={(checked) => 
-                                handleSelectOpportunity(opportunity.id, checked as boolean)
-                              }
-                              data-testid={`checkbox-select-${opportunity.id}`}
+                              checked={selectedOpportunities.length === paginatedOpportunities.length && paginatedOpportunities.length > 0}
+                              onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                              data-testid="checkbox-select-all"
                             />
-                          </td>
-                          <td className="py-4 pr-4">
-                            <div>
-                              <p className="font-medium text-foreground line-clamp-1">
-                                {opportunity.title}
-                              </p>
-                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                {opportunity.shortDescription}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="py-4">
-                            <Badge className={getStatusColor(opportunity.status || 'open')}>
-                              {(opportunity.status || 'open').charAt(0).toUpperCase() + (opportunity.status || 'open').slice(1)}
-                            </Badge>
-                          </td>
-                          <td className="py-4">
-                            <Badge className={getTypeColor(opportunity.type)}>
-                              {opportunity.type.replace("_", " ").toUpperCase()}
-                            </Badge>
-                          </td>
-                          <td className="py-4 font-medium text-foreground">
-                            <Badge variant="outline" data-testid={`badge-applicants-${opportunity.id}`}>
-                              {opportunity._count?.applications || 0} applicants
-                            </Badge>
-                          </td>
-                          <td className="py-4 text-muted-foreground text-sm">
-                            {opportunity.createdAt ? format(new Date(opportunity.createdAt), "MMM dd, yyyy") : "Unknown"}
-                          </td>
-                          <td className="py-4" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center space-x-2">
-                              <Link href={`/admin/opportunities/${opportunity.id}/edit`}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  data-testid={`button-edit-${opportunity.id}`}
-                                >
-                                  <i className="fas fa-edit"></i>
-                                </Button>
-                              </Link>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
+                          </th>
+                          <th className="py-3 text-muted-foreground font-medium">Title</th>
+                          <th className="py-3 text-muted-foreground font-medium">Status</th>
+                          <th className="py-3 text-muted-foreground font-medium">Type</th>
+                          <th className="py-3 text-muted-foreground font-medium">Applicants</th>
+                          <th className="py-3 text-muted-foreground font-medium">Created</th>
+                          <th className="py-3 text-muted-foreground font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedOpportunities.map((opportunity) => (
+                          <tr
+                            key={opportunity.id}
+                            className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                          >
+                            <td className="py-4 pl-4">
+                              <Checkbox
+                                checked={selectedOpportunities.includes(opportunity.id)}
+                                onCheckedChange={(checked) => handleSelectOpportunity(opportunity.id, checked as boolean)}
+                                data-testid={`checkbox-opportunity-${opportunity.id}`}
+                              />
+                            </td>
+                            <td className="py-4">
+                              <div className="max-w-xs">
+                                <p className="font-medium text-foreground truncate">{opportunity.title}</p>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                  {opportunity.description}
+                                </p>
+                              </div>
+                            </td>
+                            <td className="py-4">
+                              <Badge className={getStatusColor(opportunity.status)}>
+                                {opportunity.status}
+                              </Badge>
+                            </td>
+                            <td className="py-4">
+                              <span className="text-sm text-muted-foreground capitalize">
+                                {opportunity.type}
+                              </span>
+                            </td>
+                            <td className="py-4">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedOpportunityId(opportunity.id)}
+                                data-testid={`button-view-applicants-${opportunity.id}`}
+                              >
+                                <i className="fas fa-users mr-2"></i>
+                                View Applicants
+                              </Button>
+                            </td>
+                            <td className="py-4">
+                              <span className="text-sm text-muted-foreground">
+                                {format(new Date(opportunity.createdAt), "MMM dd, yyyy")}
+                              </span>
+                            </td>
+                            <td className="py-4">
+                              <div className="flex items-center space-x-2">
+                                <Link href={`/admin/opportunities/edit/${opportunity.id}`}>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    data-testid={`button-delete-${opportunity.id}`}
+                                    data-testid={`button-edit-${opportunity.id}`}
                                   >
-                                    <i className="fas fa-trash text-destructive"></i>
+                                    <i className="fas fa-edit"></i>
                                   </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Opportunity</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete "{opportunity.title}"? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteOpportunityMutation.mutate(opportunity.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                                </Link>
+                                
+                                {opportunity.status === "open" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => closeOpportunityMutation.mutate(opportunity.id)}
+                                    data-testid={`button-close-${opportunity.id}`}
+                                  >
+                                    <i className="fas fa-times text-orange-600"></i>
+                                  </Button>
+                                )}
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-4 mt-6">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    data-testid="button-prev-page"
-                  >
-                    <i className="fas fa-chevron-left mr-1"></i>Previous
-                  </Button>
-                  
-                  <div className="flex space-x-2">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const page = i + 1;
-                      return (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          data-testid={`button-page-${page}`}
-                        >
-                          {page}
-                        </Button>
-                      );
-                    })}
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      data-testid={`button-delete-${opportunity.id}`}
+                                    >
+                                      <i className="fas fa-trash text-red-600"></i>
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Opportunity</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "{opportunity.title}"? This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteOpportunityMutation.mutate(opportunity.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    data-testid="button-next-page"
-                  >
-                    Next<i className="fas fa-chevron-right ml-1"></i>
-                  </Button>
-                </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-6">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {startIndex + 1} to {Math.min(startIndex + pageSize, totalOpportunities)} of {totalOpportunities} opportunities
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          data-testid="button-previous-page"
+                        >
+                          Previous
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          data-testid="button-next-page"
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
         </div>
       </main>
 
-      <Footer />
-
-      {/* Applicant Management Modal */}
+      {/* Applicants Dialog */}
       <Dialog open={!!selectedOpportunityId} onOpenChange={() => setSelectedOpportunityId(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Applicants - {selectedOpportunity?.title}</DialogTitle>
+            <DialogTitle>Applicants</DialogTitle>
             <DialogDescription>
-              Review and manage applications for this opportunity
+              Review and manage applicants for this opportunity
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {applicantsLoading ? (
               <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-32" />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-1/4" />
                     </div>
-                    <Skeleton className="h-8 w-24" />
+                    <Skeleton className="w-20 h-6" />
+                    <Skeleton className="w-24 h-8" />
                   </div>
                 ))}
               </div>
-            ) : applicants && applicants.length > 0 ? (
-              applicants.map((application) => (
-                <div key={application.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <p className="font-medium text-foreground">
-                        {application.user.firstName} {application.user.lastName}
-                      </p>
-                      <Badge className={
-                        application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        application.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        'bg-red-100 text-red-800'
-                      }>
-                        {(application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1)}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{application.user.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Applied: {format(new Date(application.appliedAt!), "MMM dd, yyyy 'at' h:mm a")}
-                    </p>
-                    {application.completedAt && (
-                      <p className="text-xs text-muted-foreground">
-                        Completed: {format(new Date(application.completedAt!), "MMM dd, yyyy 'at' h:mm a")}
-                      </p>
-                    )}
-                    {application.hoursCompleted && (
-                      <p className="text-xs text-green-600">
-                        Hours: {application.hoursCompleted} | Coins: {application.coinsAwarded || 0}
-                      </p>
-                    )}
-                    {application.adminFeedback && (
-                      <p className="text-xs text-blue-600">
-                        Feedback: {application.adminFeedback}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    {(application.status || 'pending') === 'pending' && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleApplicantAction(application.id, 'reject')}
-                          data-testid={`button-reject-${application.id}`}
-                        >
-                          <i className="fas fa-times mr-1"></i>
-                          Reject
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleApplicantAction(application.id, 'approve')}
-                          data-testid={`button-approve-${application.id}`}
-                        >
-                          <i className="fas fa-check mr-1"></i>
-                          Approve
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
+            ) : !applicants || applicants.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-users text-muted-foreground text-xl"></i>
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">No Applications</h3>
-                <p className="text-muted-foreground">
-                  No students have applied for this opportunity yet.
-                </p>
+                <i className="fas fa-users text-muted-foreground text-4xl mb-4"></i>
+                <h3 className="text-lg font-medium mb-2">No Applicants</h3>
+                <p className="text-muted-foreground">No students have applied for this opportunity yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {applicants.map((application) => (
+                  <div
+                    key={application.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                        <i className="fas fa-user text-muted-foreground"></i>
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">
+                          {application.user?.firstName} {application.user?.lastName}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Applied {format(new Date(application.appliedAt), "MMM dd, yyyy")}
+                        </p>
+                        {application.status === "hours_submitted" && (
+                          <p className="text-sm text-purple-600 font-medium">
+                            Submitted {application.submittedHours} hours
+                          </p>
+                        )}
+                        {application.adminFeedback && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Admin feedback: {application.adminFeedback}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Badge className={getApplicationStatusColor(application.status)}>
+                        {application.status.replace('_', ' ')}
+                      </Badge>
+                      {application.status === "hours_submitted" && (
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleApplicantAction(application.id, "approve")}
+                            data-testid={`button-approve-hours-${application.id}`}
+                          >
+                            Approve Hours
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleApplicantAction(application.id, "reject")}
+                            data-testid={`button-reject-hours-${application.id}`}
+                          >
+                            Reject Hours
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Approve with Hours/Feedback Dialog */}
+      {/* Approve/Reject Hours Dialog */}
       <Dialog open={!!applicantAction} onOpenChange={() => setApplicantAction(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Approve Application</DialogTitle>
+            <DialogTitle>
+              {applicantAction?.action === "approve" ? "Approve Hours" : "Reject Hours"}
+            </DialogTitle>
             <DialogDescription>
-              Set hours completed and provide feedback for this volunteer work
+              {applicantAction?.action === "approve" 
+                ? "Review and approve the submitted hours" 
+                : "Provide feedback for rejecting the submitted hours"
+              }
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
+            {applicantAction?.action === "approve" && (
+              <div>
+                <Label htmlFor="hours">Hours Completed</Label>
+                <Input
+                  id="hours"
+                  type="number"
+                  value={hoursCompleted}
+                  onChange={(e) => setHoursCompleted(e.target.value)}
+                  placeholder="Enter completed hours"
+                  data-testid="input-hours-completed"
+                />
+              </div>
+            )}
             <div>
-              <Label htmlFor="hours">Hours Completed</Label>
-              <Input
-                id="hours"
-                type="number"
-                placeholder="Enter hours completed"
-                value={hoursCompleted}
-                onChange={(e) => setHoursCompleted(e.target.value)}
-                data-testid="input-hours-completed"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="feedback">Admin Feedback</Label>
+              <Label htmlFor="feedback">
+                {applicantAction?.action === "approve" ? "Feedback (Optional)" : "Feedback (Required)"}
+              </Label>
               <Textarea
                 id="feedback"
-                placeholder="Provide feedback on the volunteer's work"
                 value={adminFeedback}
                 onChange={(e) => setAdminFeedback(e.target.value)}
-                rows={3}
+                placeholder="Enter your feedback..."
                 data-testid="textarea-admin-feedback"
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end space-x-2 mt-6">
-            <Button
-              variant="outline"
-              onClick={() => setApplicantAction(null)}
-              data-testid="button-cancel-approval"
-            >
+            <Button variant="outline" onClick={() => setApplicantAction(null)}>
               Cancel
             </Button>
             <Button
-              onClick={handleApproveWithDetails}
-              disabled={updateApplicationMutation.isPending}
-              data-testid="button-confirm-approval"
+              onClick={applicantAction?.action === "approve" ? handleApproveHours : handleRejectHours}
+              disabled={applicantAction?.action === "approve" ? !hoursCompleted : !adminFeedback}
+              data-testid={`button-confirm-${applicantAction?.action}`}
             >
-              {updateApplicationMutation.isPending ? "Approving..." : "Approve & Complete"}
+              {applicantAction?.action === "approve" ? "Approve" : "Reject"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <Footer />
     </div>
   );
 }

@@ -364,6 +364,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Student submits hours for an accepted application
+  app.post("/api/applications/:id/submit-hours", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { hours } = req.body;
+      const userId = req.user.id;
+
+      if (!hours || hours <= 0) {
+        return res.status(400).json({ message: "Valid hours required" });
+      }
+
+      // Check if the application belongs to the requesting user
+      const application = await storage.getApplicationById(id);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      if (application.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (application.status !== "accepted") {
+        return res.status(400).json({ message: "Application must be accepted before submitting hours" });
+      }
+
+      const updatedApplication = await storage.submitStudentHours(id, hours);
+      if (!updatedApplication) {
+        return res.status(500).json({ message: "Failed to submit hours" });
+      }
+
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Error submitting student hours:", error);
+      res.status(500).json({ message: "Failed to submit hours" });
+    }
+  });
+
+  // Admin approves student hours
+  app.post("/api/applications/:id/approve-hours", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { coinsAwarded, feedback } = req.body;
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!coinsAwarded || coinsAwarded <= 0) {
+        return res.status(400).json({ message: "Valid coins amount required" });
+      }
+
+      const application = await storage.getApplicationById(id);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      if (application.status !== "hours_submitted") {
+        return res.status(400).json({ message: "Application must have submitted hours to approve" });
+      }
+
+      const updatedApplication = await storage.approveStudentHours(id, coinsAwarded, feedback);
+      if (!updatedApplication) {
+        return res.status(500).json({ message: "Failed to approve hours" });
+      }
+
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Error approving student hours:", error);
+      res.status(500).json({ message: "Failed to approve hours" });
+    }
+  });
+
+  // Admin rejects student hours
+  app.post("/api/applications/:id/reject-hours", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { feedback } = req.body;
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!feedback) {
+        return res.status(400).json({ message: "Feedback is required when rejecting hours" });
+      }
+
+      const application = await storage.getApplicationById(id);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      if (application.status !== "hours_submitted") {
+        return res.status(400).json({ message: "Application must have submitted hours to reject" });
+      }
+
+      const updatedApplication = await storage.rejectStudentHours(id, feedback);
+      if (!updatedApplication) {
+        return res.status(500).json({ message: "Failed to reject hours" });
+      }
+
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Error rejecting student hours:", error);
+      res.status(500).json({ message: "Failed to reject hours" });
+    }
+  });
+
+  // Get opportunity progress for admin dashboard
+  app.get("/api/opportunity-progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const progressData = await storage.getOpportunityProgress();
+      res.json(progressData);
+    } catch (error) {
+      console.error("Error fetching opportunity progress:", error);
+      res.status(500).json({ message: "Failed to fetch opportunity progress" });
+    }
+  });
+
+  // Admin close opportunity
+  app.patch("/api/opportunities/:id/close", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const updatedOpportunity = await storage.updateOpportunity(id, { status: "closed" });
+      if (!updatedOpportunity) {
+        return res.status(404).json({ message: "Opportunity not found" });
+      }
+
+      res.json(updatedOpportunity);
+    } catch (error) {
+      console.error("Error closing opportunity:", error);
+      res.status(500).json({ message: "Failed to close opportunity" });
+    }
+  });
+
+  // Admin remove opportunity (soft delete or hard delete)
+  app.delete("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const deleted = await storage.deleteOpportunity(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Opportunity not found" });
+      }
+
+      res.json({ message: "Opportunity removed successfully" });
+    } catch (error) {
+      console.error("Error removing opportunity:", error);
+      res.status(500).json({ message: "Failed to remove opportunity" });
+    }
+  });
+
   // Leaderboard routes
   app.get("/api/leaderboard", async (req, res) => {
     try {

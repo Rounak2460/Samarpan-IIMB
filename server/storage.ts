@@ -52,9 +52,12 @@ export interface IStorage {
   getApplicationsByOpportunity(opportunityId: string): Promise<ApplicationWithDetails[]>;
   updateApplicationStatus(
     id: string,
-    status: "pending" | "accepted" | "completed" | "rejected",
+    status: "pending" | "accepted" | "hours_submitted" | "hours_approved" | "completed" | "rejected",
     notes?: string
   ): Promise<Application | undefined>;
+  submitStudentHours(id: string, submittedHours: number): Promise<Application | undefined>;
+  approveStudentHours(id: string, coinsAwarded: number, feedback?: string): Promise<Application | undefined>;
+  rejectStudentHours(id: string, feedback: string): Promise<Application | undefined>;
   markApplicationCompleted(id: string, coinsAwarded: number, hours?: number, feedback?: string): Promise<Application | undefined>;
   getUserStats(userId: string): Promise<{totalApplications: number; completedApplications: number; totalHours: number; totalCoins: number}>;
   checkExistingApplication(userId: string, opportunityId: string): Promise<Application | undefined>;
@@ -74,6 +77,15 @@ export interface IStorage {
     applicationsOverTime: Array<{ date: string; count: number }>;
     applicationsByType: Array<{ type: string; count: number }>;
   }>;
+  getOpportunityProgress(): Promise<Array<{
+    id: string;
+    title: string;
+    totalRequiredHours: number | null;
+    completedHours: number;
+    totalApplications: number;
+    completedApplications: number;
+    status: string;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -901,12 +913,12 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async submitApplicationHours(id: string, hours: number): Promise<Application | undefined> {
+  async submitStudentHours(id: string, submittedHours: number): Promise<Application | undefined> {
     const [updated] = await db
       .update(applications)
       .set({
         status: "hours_submitted",
-        submittedHours: hours,
+        submittedHours,
         hourSubmissionDate: new Date(),
       })
       .where(eq(applications.id, id))
@@ -918,6 +930,69 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updated;
+  }
+
+  async approveStudentHours(id: string, coinsAwarded: number, feedback?: string): Promise<Application | undefined> {
+    try {
+      const [application] = await db
+        .select()
+        .from(applications)
+        .where(eq(applications.id, id));
+
+      if (!application) {
+        throw new Error("Application not found");
+      }
+
+      const [updatedApplication] = await db
+        .update(applications)
+        .set({ 
+          status: "hours_approved",
+          hoursCompleted: application.submittedHours,
+          coinsAwarded,
+          adminFeedback: feedback,
+          completedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(applications.id, id))
+        .returning();
+      
+      // Update user coins
+      await db
+        .update(users)
+        .set({ 
+          coins: sql`${users.coins} + ${coinsAwarded}`
+        })
+        .where(eq(users.id, application.userId));
+
+      // Check if opportunity should be auto-closed due to hours fulfillment
+      await this.checkAndCloseOpportunityByHours(application.opportunityId);
+      
+      return updatedApplication;
+    } catch (error) {
+      console.error("Error approving student hours:", error);
+      return undefined;
+    }
+  }
+
+  async rejectStudentHours(id: string, feedback: string): Promise<Application | undefined> {
+    try {
+      const [updatedApplication] = await db
+        .update(applications)
+        .set({ 
+          status: "accepted", // Back to accepted so student can resubmit
+          adminFeedback: feedback,
+          submittedHours: 0, // Reset submitted hours
+          hourSubmissionDate: null,
+          updatedAt: new Date()
+        })
+        .where(eq(applications.id, id))
+        .returning();
+      
+      return updatedApplication;
+    } catch (error) {
+      console.error("Error rejecting student hours:", error);
+      return undefined;
+    }
   }
 
   async checkAndCloseOpportunityByHours(opportunityId: string): Promise<void> {
@@ -940,7 +1015,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(applications.opportunityId, opportunityId),
-          eq(applications.status, "completed")
+          or(eq(applications.status, "completed"), eq(applications.status, "hours_approved"))
         )
       );
 
@@ -1116,6 +1191,33 @@ export class DatabaseStorage implements IStorage {
         count: item.count,
       })),
     };
+  }
+
+  async getOpportunityProgress(): Promise<Array<{
+    id: string;
+    title: string;
+    totalRequiredHours: number | null;
+    completedHours: number;
+    totalApplications: number;
+    completedApplications: number;
+    status: string;
+  }>> {
+    const progressData = await db
+      .select({
+        id: opportunities.id,
+        title: opportunities.title,
+        totalRequiredHours: opportunities.totalRequiredHours,
+        status: opportunities.status,
+        totalApplications: sql<number>`COUNT(${applications.id})`,
+        completedApplications: sql<number>`COUNT(CASE WHEN ${applications.status} IN ('hours_approved', 'completed') THEN 1 END)`,
+        completedHours: sql<number>`COALESCE(SUM(CASE WHEN ${applications.status} IN ('hours_approved', 'completed') THEN ${applications.hoursCompleted} ELSE 0 END), 0)`,
+      })
+      .from(opportunities)
+      .leftJoin(applications, eq(opportunities.id, applications.opportunityId))
+      .groupBy(opportunities.id, opportunities.title, opportunities.totalRequiredHours, opportunities.status)
+      .orderBy(desc(opportunities.createdAt));
+
+    return progressData;
   }
 }
 
