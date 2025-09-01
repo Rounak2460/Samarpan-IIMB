@@ -87,7 +87,7 @@ export async function setupAuth(app: Express) {
         // Use bcrypt to verify hashed password
         const isValidPassword = existingUser.password && await bcrypt.compare(password, existingUser.password);
         
-        if (isValidPassword || password === "iimb2024") {
+        if (isValidPassword) {
           return done(null, {
             id: existingUser.id,
             email: existingUser.email,
@@ -156,8 +156,9 @@ export async function setupAuth(app: Express) {
       const autoRole = determineRoleFromEmail(email);
       const finalRole = role || autoRole;
 
-      // Hash the default password
-      const hashedPassword = await bcrypt.hash("iimb2024", 10);
+      // Generate password based on first name
+      const generatedPassword = storage.generateUserPassword(email, firstName);
+      const hashedPassword = await bcrypt.hash(generatedPassword, 10);
       
       // Create new user
       const newUser = await storage.createUser({
@@ -173,7 +174,7 @@ export async function setupAuth(app: Express) {
       res.status(201).json({ 
         user: newUser, 
         message: 'Registration successful',
-        tempPassword: 'iimb2024' // For demo - in production use proper password system
+        tempPassword: generatedPassword
       });
     } catch (error) {
       console.error('Registration error:', error);

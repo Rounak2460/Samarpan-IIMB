@@ -114,7 +114,7 @@ export default function Login() {
                   data-testid="input-password"
                 />
                 <p className="text-xs text-gray-500">
-                  For demo: use password "iimb2024"
+                  Use password format: YourFirstName@2024
                 </p>
               </div>
 
