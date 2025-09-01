@@ -20,6 +20,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -50,6 +51,11 @@ export default function AdminOpportunities() {
   const [applicantAction, setApplicantAction] = useState<{id: string; action: 'approve' | 'reject'} | null>(null);
   const [hoursCompleted, setHoursCompleted] = useState("");
   const [adminFeedback, setAdminFeedback] = useState("");
+  const [expandedOpportunity, setExpandedOpportunity] = useState<string | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [notes, setNotes] = useState("");
   const pageSize = 10;
 
   // Close opportunity mutation
@@ -234,8 +240,8 @@ export default function AdminOpportunities() {
   });
 
   const { data: applicants, isLoading: applicantsLoading } = useQuery<ApplicationWithDetails[]>({
-    queryKey: [`/api/applications/opportunity/${selectedOpportunityId}`],
-    enabled: !!selectedOpportunityId,
+    queryKey: [`/api/applications/opportunity/${expandedOpportunity}`],
+    enabled: !!expandedOpportunity,
   });
 
   if (authLoading) {
@@ -285,6 +291,37 @@ export default function AdminOpportunities() {
   const handleApplicantAction = (applicationId: string, action: 'approve' | 'reject') => {
     setApplicantAction({ id: applicationId, action });
   };
+
+  // Application management mutations
+  const updateStatusMutation = useMutation({
+    mutationFn: async (data: {
+      applicationId: string;
+      status: string;
+      notes?: string;
+    }) => {
+      await apiRequest("PUT", `/api/applications/${data.applicationId}/status`, {
+        status: data.status,
+        notes: data.notes,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Application status updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications/opportunity"] });
+      setUpdateDialogOpen(false);
+      setSelectedApplication(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update application status",
+        variant: "destructive",
+      });
+    },
+  });
+
 
   const handleApproveHours = () => {
     if (!applicantAction || !hoursCompleted) return;
@@ -493,11 +530,17 @@ export default function AdminOpportunities() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setSelectedOpportunityId(opportunity.id)}
+                                onClick={() => {
+                                  if (expandedOpportunity === opportunity.id) {
+                                    setExpandedOpportunity(null);
+                                  } else {
+                                    setExpandedOpportunity(opportunity.id);
+                                  }
+                                }}
                                 data-testid={`button-view-applicants-${opportunity.id}`}
                               >
-                                <i className="fas fa-users mr-2"></i>
-                                View Applicants
+                                <i className={`fas ${expandedOpportunity === opportunity.id ? 'fa-chevron-up' : 'fa-users'} mr-2`}></i>
+                                {expandedOpportunity === opportunity.id ? 'Hide' : 'Manage'} Applications
                               </Button>
                             </td>
                             <td className="py-4">
@@ -559,6 +602,146 @@ export default function AdminOpportunities() {
                               </div>
                             </td>
                           </tr>
+                          {/* Expanded Applications Section */}
+                          {expandedOpportunity === opportunity.id && (
+                            <tr>
+                              <td colSpan={7} className="py-0">
+                                <div className="bg-gray-50 border-t border-gray-200 p-4">
+                                  <h4 className="font-semibold mb-3">Applications for {opportunity.title}</h4>
+                                  {applicantsLoading ? (
+                                    <div className="space-y-2">
+                                      {Array.from({ length: 3 }).map((_, i) => (
+                                        <Skeleton key={i} className="h-12 w-full" />
+                                      ))}
+                                    </div>
+                                  ) : !applicants || applicants.length === 0 ? (
+                                    <div className="text-center py-6">
+                                      <i className="fas fa-inbox text-gray-400 text-2xl mb-2"></i>
+                                      <p className="text-gray-500">No applications yet</p>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {applicants.map((application) => (
+                                        <div key={application.id} className="bg-white rounded-lg border p-3 flex items-center justify-between">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
+                                              {application.user?.firstName?.[0]}{application.user?.lastName?.[0]}
+                                            </div>
+                                            <div>
+                                              <p className="font-medium text-sm">
+                                                {application.user?.firstName} {application.user?.lastName}
+                                              </p>
+                                              <p className="text-xs text-gray-500">{application.user?.email}</p>
+                                              <p className="text-xs text-gray-400">
+                                                Applied: {application.appliedAt ? format(new Date(application.appliedAt), "MMM dd, yyyy") : "Unknown"}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex items-center space-x-2">
+                                            <Badge className={getStatusColor(application.status || 'pending')} data-testid={`badge-status-${application.id}`}>
+                                              {(application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1).replace('_', ' ')}
+                                            </Badge>
+                                            
+                                            {application.status === "hours_submitted" ? (
+                                              <>
+                                                <Button
+                                                  variant="default"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    approveHoursMutation.mutate({
+                                                      applicationId: application.id,
+                                                      coinsAwarded: application.submittedHours * (application.opportunity?.coinsPerHour || 10),
+                                                      feedback: "Hours approved by admin",
+                                                    });
+                                                  }}
+                                                  data-testid={`button-approve-hours-${application.id}`}
+                                                >
+                                                  <i className="fas fa-check mr-1"></i>
+                                                  Approve ({application.submittedHours}h)
+                                                </Button>
+                                                <Button
+                                                  variant="destructive"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    const feedback = prompt("Please provide feedback for rejection:");
+                                                    if (feedback) {
+                                                      rejectHoursMutation.mutate({
+                                                        applicationId: application.id,
+                                                        feedback,
+                                                      });
+                                                    }
+                                                  }}
+                                                  data-testid={`button-reject-hours-${application.id}`}
+                                                >
+                                                  <i className="fas fa-times mr-1"></i>
+                                                  Reject
+                                                </Button>
+                                              </>
+                                            ) : application.status === "pending" ? (
+                                              <>
+                                                <Button
+                                                  variant="default"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    updateStatusMutation.mutate({
+                                                      applicationId: application.id,
+                                                      status: "accepted",
+                                                      notes: "Application accepted by admin",
+                                                    });
+                                                  }}
+                                                  data-testid={`button-accept-${application.id}`}
+                                                >
+                                                  <i className="fas fa-check mr-1"></i>
+                                                  Accept
+                                                </Button>
+                                                <Button
+                                                  variant="destructive"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    updateStatusMutation.mutate({
+                                                      applicationId: application.id,
+                                                      status: "rejected",
+                                                      notes: "Application rejected by admin",
+                                                    });
+                                                  }}
+                                                  data-testid={`button-reject-${application.id}`}
+                                                >
+                                                  <i className="fas fa-times mr-1"></i>
+                                                  Reject
+                                                </Button>
+                                              </>
+                                            ) : (
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleUpdateStatus(application)}
+                                                data-testid={`button-update-${application.id}`}
+                                              >
+                                                <i className="fas fa-edit mr-1"></i>
+                                                Update
+                                              </Button>
+                                            )}
+                                            
+                                            {application.user?.email && (
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => window.open(`mailto:${application.user?.email}`)}
+                                                data-testid={`button-email-${application.id}`}
+                                              >
+                                                <i className="fas fa-envelope"></i>
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
                         ))}
                       </tbody>
                     </table>

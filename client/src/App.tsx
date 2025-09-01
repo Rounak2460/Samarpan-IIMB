@@ -13,7 +13,7 @@ import OpportunityDetail from "@/pages/opportunity-detail";
 import Profile from "@/pages/profile";
 import Leaderboard from "@/pages/leaderboard";
 import AdminDashboard from "@/pages/admin/dashboard";
-import AdminOpportunities from "@/pages/admin/opportunities";
+import AdminOpportunities from "@/pages/admin/opportunities-new";
 import OpportunityForm from "@/pages/admin/opportunity-form";
 import Applications from "@/pages/admin/applications";
 import Analytics from "@/pages/admin/analytics";
