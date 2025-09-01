@@ -5,9 +5,11 @@ This guide provides comprehensive instructions for deploying the IIMB Samarpan p
 ## 🎯 Deployment Overview
 
 The IIMB Samarpan platform is designed for enterprise deployment with the following requirements:
-- PostgreSQL database for data persistence
+- PostgreSQL database for data persistence with auto-closing functionality
 - Replit OpenID Connect authentication
 - Session storage with database backing
+- Iterative hour submission workflow support
+- Real-time progress tracking capabilities
 - Static asset serving
 - HTTPS/SSL support for production
 
@@ -239,6 +241,15 @@ SELECT pg_size_pretty(pg_database_size('iimb_samarpan'));
 
 -- Monitor active connections
 SELECT count(*) FROM pg_stat_activity WHERE datname = 'iimb_samarpan';
+
+-- Check auto-closing opportunity performance
+SELECT o.title, o.total_required_hours, 
+       COALESCE(SUM(a.hours_completed), 0) as total_completed,
+       o.status
+FROM opportunities o
+LEFT JOIN applications a ON o.id = a.opportunity_id 
+WHERE a.status IN ('completed', 'hours_approved')
+GROUP BY o.id, o.title, o.total_required_hours, o.status;
 
 -- Check table sizes
 SELECT 

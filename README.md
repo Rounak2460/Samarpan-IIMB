@@ -8,20 +8,26 @@ A comprehensive enterprise-grade social volunteering platform designed for IIM B
 
 ### For Students
 - **Opportunity Discovery**: Browse curated volunteer opportunities with advanced filtering
-- **Gamified Engagement**: Earn coins based on hours contributed (hourly-based reward system)
-- **Progress Tracking**: Monitor applications, completed hours, and achievements
+- **Iterative Hour Submission**: Submit multiple hour entries per opportunity until completion
+- **Gamified Engagement**: Earn coins based on hours contributed (flexible hourly rates starting from 1 coin/hr)
+- **Progress Tracking**: Monitor applications, submitted hours, and real-time approval status
 - **Leaderboard**: Compete with peers while maintaining privacy options
 - **Profile Management**: Customize profile and privacy settings
 
 ### For Administrators
-- **Opportunity Management**: Create, edit, and manage volunteer opportunities
-- **Application Review**: Review student applications and assign completion hours
-- **Analytics Dashboard**: Track platform engagement and impact metrics
+- **Opportunity Management**: Create, edit, and auto-close opportunities when hour targets are met
+- **Application Review**: Review student applications and approve iterative hour submissions
+- **Progress Analytics**: Real-time progress bars showing approved hours vs. total requirements
+- **Smart Workflows**: Auto-closing activities when required hours are fulfilled
+- **Enhanced Dashboard**: Track platform engagement with detailed completion metrics
 - **User Management**: Oversee student accounts and platform activity
 
 ### Platform Features
 - **Enterprise-Grade Design**: Professional IIMB-branded interface
-- **Hourly Coin System**: Rewards based on actual time contributed (XX coins/hr with maximum limits)
+- **Flexible Coin System**: Rewards based on actual time contributed (customizable coins/hr starting from 1)
+- **Auto-Closing Activities**: Opportunities automatically close when hour requirements are fulfilled
+- **Iterative Submissions**: Students can submit multiple hour entries until opportunity completion
+- **Real-time Progress Tracking**: Live progress bars showing completion status
 - **Role-Based Access**: Separate interfaces for students and administrators
 - **Real-time Updates**: Live data synchronization across the platform
 - **Mobile Responsive**: Optimized for all device sizes
@@ -141,10 +147,13 @@ iimb-samarpan/
 
 ## 🎯 Key Concepts
 
-### Coin Reward System
-- **Hourly-Based**: Rewards calculated as `hours_completed × coins_per_hour`
+### Enhanced Coin Reward System
+- **Flexible Hourly Rates**: Customizable coins per hour (starting from 1, fully manual)
+- **Iterative Accumulation**: Coins calculated from each approved hour submission
+- **Auto-Capping**: Opportunities auto-close when hour requirements are met
 - **Maximum Limits**: Each opportunity has a maximum coin cap
 - **Display Format**: Shows as "XX coins/hr (max XX coins)"
+- **Real-time Tracking**: Progress bars show completion status
 
 ### User Roles
 - **Students**: Can browse opportunities, apply, and track progress
@@ -156,12 +165,14 @@ iimb-samarpan/
 - **Mentoring**: Guidance and coaching roles
 - **Community Service**: General volunteer work
 
-### Application Workflow
+### Enhanced Application Workflow
 1. Student applies to opportunity
 2. Admin reviews and accepts/rejects application
-3. Student completes the volunteer work
-4. Admin assigns completion hours and awards coins
-5. Student receives coins and badges based on achievements
+3. Student begins volunteer work and submits hours iteratively
+4. Admin reviews and approves each hour submission
+5. Multiple submissions allowed until opportunity completion
+6. Opportunity auto-closes when total approved hours meet requirements
+7. Student receives accumulated coins based on approved hours
 
 ## 🔐 Authentication
 
