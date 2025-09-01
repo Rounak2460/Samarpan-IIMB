@@ -203,7 +203,7 @@ export default function SuperStudentDashboard() {
       case "accepted": return "🎉";
       case "hours_submitted": return "⏰";
       case "completed": return "🏆";
-      case "hours_approved": return "✅";
+      case "hours_approved": return "🔄";
       case "rejected": return "❌";
       default: return "📝";
     }
@@ -370,7 +370,7 @@ export default function SuperStudentDashboard() {
                               <p className="text-gray-600 text-sm">{application.opportunity?.shortDescription}</p>
                             </div>
                             <Badge className={`${getStatusColor(application.status)} border-2 px-4 py-2 text-sm font-medium`}>
-                              {getStatusIcon(application.status)} {(application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1).replace('_', ' ')}
+                              {getStatusIcon(application.status)} {application.status === "hours_approved" ? "Can Continue" : (application.status || 'pending').charAt(0).toUpperCase() + (application.status || 'pending').slice(1).replace('_', ' ')}
                             </Badge>
                           </div>
                           
@@ -398,24 +398,28 @@ export default function SuperStudentDashboard() {
                                 </div>
                               </div>
                             )}
-                            {application.status === "accepted" && (
+                            {(application.status === "accepted" || application.status === "hours_approved") && (
                               <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                <div className="text-xs text-purple-600 mb-1">Action Needed</div>
-                                <div className="font-semibold text-purple-800 text-sm">Submit Hours</div>
+                                <div className="text-xs text-purple-600 mb-1">
+                                  {application.status === "hours_approved" ? "Can Add More" : "Action Needed"}
+                                </div>
+                                <div className="font-semibold text-purple-800 text-sm">
+                                  {application.status === "hours_approved" ? "More Hours" : "Submit Hours"}
+                                </div>
                               </div>
                             )}
                           </div>
                         </div>
                         
                         <div className="flex flex-col space-y-2 ml-6">
-                          {application.status === "accepted" && (
+                          {(application.status === "accepted" || application.status === "hours_approved") && (
                             <Button
                               onClick={() => setSelectedApplication(application)}
                               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
                               data-testid={`button-submit-hours-${application.id}`}
                             >
                               <i className="fas fa-clock mr-2"></i>
-                              Submit Hours
+                              {application.status === "hours_approved" ? "Submit More Hours" : "Submit Hours"}
                             </Button>
                           )}
                           <Link href={`/opportunity/${application.opportunityId}`}>
@@ -621,11 +625,20 @@ export default function SuperStudentDashboard() {
           <DialogHeader>
             <DialogTitle className="flex items-center text-2xl">
               <i className="fas fa-clock mr-3 text-purple-600"></i>
-              ⏰ Submit Your Impact Hours
+              ⏰ {selectedApplication?.status === "hours_approved" ? "Submit Additional Hours" : "Submit Your Impact Hours"}
             </DialogTitle>
             <DialogDescription className="text-lg">
-              Congratulations on completing <strong className="text-purple-700">{selectedApplication?.opportunity?.title}</strong>! 
-              Enter the hours you dedicated to this meaningful work.
+              {selectedApplication?.status === "hours_approved" ? (
+                <>
+                  Great work on <strong className="text-purple-700">{selectedApplication?.opportunity?.title}</strong>! 
+                  You can continue contributing and earn more coins. Enter any additional hours completed.
+                </>
+              ) : (
+                <>
+                  Congratulations on completing <strong className="text-purple-700">{selectedApplication?.opportunity?.title}</strong>! 
+                  Enter the hours you dedicated to this meaningful work.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
 

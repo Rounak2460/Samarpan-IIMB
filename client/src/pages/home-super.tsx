@@ -191,7 +191,7 @@ export default function SuperHome() {
                                 {application.status === 'accepted' && '🎉 Ready to Start'}
                                 {application.status === 'hours_submitted' && '⏰ Hours Under Review'}
                                 {application.status === 'completed' && '🏆 Completed'}
-                                {application.status === 'hours_approved' && '✅ Approved'}
+                                {application.status === 'hours_approved' && '🔄 Can Continue'}
                               </Badge>
                             </div>
 

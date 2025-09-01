@@ -943,26 +943,36 @@ export class DatabaseStorage implements IStorage {
         throw new Error("Application not found");
       }
 
+      // Calculate cumulative hours: previous completed hours + newly submitted hours
+      const cumulativeHours = (application.hoursCompleted || 0) + (application.submittedHours || 0);
+      
+      // Calculate additional coins to award (not replacing, adding)
+      const previousCoins = application.coinsAwarded || 0;
+      const additionalCoins = coinsAwarded - previousCoins;
+
       const [updatedApplication] = await db
         .update(applications)
         .set({ 
           status: "hours_approved",
-          hoursCompleted: application.submittedHours,
+          hoursCompleted: cumulativeHours,
           coinsAwarded,
           adminFeedback: feedback,
           completedAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          submittedHours: 0, // Reset submitted hours after approval
         })
         .where(eq(applications.id, id))
         .returning();
       
-      // Update user coins
-      await db
-        .update(users)
-        .set({ 
-          coins: sql`${users.coins} + ${coinsAwarded}`
-        })
-        .where(eq(users.id, application.userId));
+      // Update user coins (only add the additional coins, not the total)
+      if (additionalCoins > 0) {
+        await db
+          .update(users)
+          .set({ 
+            coins: sql`${users.coins} + ${additionalCoins}`
+          })
+          .where(eq(users.id, application.userId));
+      }
 
       // Check if opportunity should be auto-closed due to hours fulfillment
       await this.checkAndCloseOpportunityByHours(application.opportunityId);

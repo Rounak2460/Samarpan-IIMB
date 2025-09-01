@@ -278,8 +278,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      if (application.status !== "accepted") {
-        return res.status(400).json({ message: "Can only submit hours for accepted applications" });
+      if (application.status !== "accepted" && application.status !== "hours_approved") {
+        return res.status(400).json({ message: "Can only submit hours for accepted or previously approved applications" });
       }
 
       const updatedApplication = await storage.submitStudentHours(id, hours);
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const generatedPassword = storage.generateUserPassword(targetUser.email, targetUser.firstName);
+      const generatedPassword = storage.generateUserPassword(targetUser.email, targetUser.firstName || "");
       res.json({ 
         password: generatedPassword,
         user: `${targetUser.firstName} ${targetUser.lastName}`,
